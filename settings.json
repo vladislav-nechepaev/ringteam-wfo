@@ -1,0 +1,96 @@
+{
+  "psql": {
+    "user": "freshservice",
+    "host": "localhost",
+    "database": "freshservice",
+    "password": "thisisactuallyhardertobruteforce",
+    "port": 5432
+  },
+  "office_capacity": {
+    "toronto": 120,
+    "lab62": 27,
+    "lab64": 27,
+    "lab72": 200,
+    "parking": 150,
+    "parking_lviv": 19,
+    "zeus_lab": 30,
+    "bc_platforma": 250,
+    "toronto_test": 3,
+    "lab62_test": 3,
+    "lab64_test": 3,
+    "lab72_test": 50,
+    "parking_test": 3,
+    "parking_lviv_test": 19,
+    "zeus_lab_test": 3,
+    "bc_platforma_test": 3
+  },
+  "parking_locations": [
+    "parking",
+    "parking_lviv",
+    "parking_platforma",
+    "parking_test",
+    "parking_lviv_test",
+    "parking_platforma_test"
+  ],
+  "parking_officespace": {
+    "TEST FLOOR": "parking_lviv"
+  },
+  "access_token": "T3stK3Y",
+  "bamboo_token": "bba2d3dbef917fcf5641af77bb4820c274ec7d02:x",
+  "fs_api": {
+    "prod": {
+      "domain": "ringteam.freshservice.com",
+      "api_key": "uIs79hB3SmDefcB0OQs"
+    },
+    "test": {
+      "domain": "ringteam-fs-test.freshservice.com",
+      "api_key": "uIs79hB3SmDefcB0OQs"
+    }
+  },
+  "meido_token": "test",
+  "avigilon": {
+    "domain": "10.72.2.144",
+    "login": "FSbot",
+    "pass": "SQUAD2021",
+    "target_office": "lab72",
+    "exception_emails": [
+      "denis.gubarev@ringteam.com",
+      "liubomyr.vasyliev@ringteam.com",
+      "dana.borysova@ringteam.com",
+      "alisa.shcherbinina@ringteam.com",
+      "igor.kotiv@ringteam.com",
+      "dima.napreenko@ringteam.com",
+      "maryna.hetmantseva@ringteam.com",
+      "gordiy.zhdanov@ringteam.com",
+      "viktor.davidiuk@ringteam.com",
+      "pavel.gulidov@ringteam.com",
+      "inna.selivon@ringteam.com",
+      "dmitriy.hlynianiy@ringteam.com",
+      "roman.zabolotnii@ringteam.com",
+      "sergey.grebeniuk@ringteam.com",
+      "oleksii.ahii@ringteam.com",
+      "vitalii.raboshchuk@ringteam.com",
+      "andrey.onoprienko@ringteam.com",
+      "tatiana.kamenkova@ringteam.com",
+      "a.didenko@ringteam.com",
+      "oleksandr.filatov@ringteam.com",
+      "david.figeroa@ringteam.com",
+      "hanna.hots@ringteam.com",
+      "andrii.usenko@ringteam.com",
+      "alla.kvitka@ringteam.com",
+      "timothy.oliynyk@ringteam.com"
+    ]
+  },
+  "netsuite": {
+    "consumerKey": "2c084ee960d3c98927414cee4695b93c7b4382cf790d6c117fad70ce6de79c42",
+    "consumerSecret": "2ed0f8fe384a9e6e1264c547847ab05dd776bcbb2e4f63cb709b04d3a5dddd10",
+    "token": "93eb918763cc8b5cdff1632940d3acc27a2c6a00855ecf0374ec007f476b380b",
+    "tokenSecret": "cb9a12a330f90908d47753f608f15aaa0845bb4b80b5be44d79a995050182127",
+    "realm": "5138697_SB1"
+  },
+  "officespace": {
+    "domain": "squad.officespace.com",
+    "api_key": "370df1d54050b6ccdf0d6c2135f4d200s",
+    "parking_floor_id": 184
+  }
+}
