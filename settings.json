@@ -33,7 +33,7 @@
     "parking_platforma_test"
   ],
   "parking_officespace": {
-    "TEST FLOOR": "parking_lviv"
+    "Parking Lviv": "parking_lviv_test"
   },
   "access_token": "T3stK3Y",
   "bamboo_token": "bba2d3dbef917fcf5641af77bb4820c274ec7d02:x",

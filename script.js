@@ -3,6 +3,7 @@ const https = require("https")
 const { Pool, Client } = require('pg')
 const base64 = require("base-64")
 const fs = require("fs")
+//const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args))
 const fetch = require("node-fetch")
 const request = require("request-promise")
 const xmljs = require("xml-js")
@@ -84,7 +85,9 @@ app.get('/dev/avigilon/get', cors(), (req, res) => { getAvigilonDev(req, res) })
 
 app.get('/netsuite/teambuilding/participants', cors(), (req, res) => { netsuiteGetTeambuildingParticipants(req, res) })
 
-app.post('/officespace/test', (req, res) => { officeSpaceTest(req, res) })
+app.post('/officespace/create', (req, res) => { officeSpaceParkingCreate(req, res) })
+
+app.post('/officespace/cancel', (req, res) => { officeSpaceParkingCancel(req, res) })
 
 app.get('/parkinglist/lviv', (req, res) => { parkingTableLviv(req, res) })
 
@@ -399,7 +402,7 @@ function modifyAvigilon(req, res){
   })
 }
 
-function officeSpaceTest(req, res){
+function officeSpaceParkingCreate(req, res){
   // CURRENTLY CONFIGURED FOR REGULAR PARKING ONLY
   var data = ""
   req.on('data', chunk => {
@@ -430,21 +433,52 @@ function officeSpaceTest(req, res){
   })
 }
 
+function officeSpaceParkingCancel(req, res){
+  // CURRENTLY CONFIGURED FOR REGULAR PARKING ONLY
+  var data = ""
+  req.on('data', chunk => {
+    data += chunk
+  })
+  req.on('end', async () => {
+    console.log(data)
+    const body = JSON.parse(data)
+    res.writeHead(200)
+    res.end()
+    const parkingAlias = settings.parking_officespace[body.floor]
+    if (parkingAlias) {
+      const today = new Date().toISOString().split("T")[0]
+      const parkingPlatformaAliases = [
+        "parking_platforma",
+        "parking_platforma_test"
+      ]
+      const client = await pool.connect()
+      if (parkingPlatformaAliases.includes(parkingAlias)) {
+        // =====================================================
+        console.log("OfficeSpace v2 parking: Not supported yet!")
+        // =====================================================
+      } else {
+        await client.query(`UPDATE ${parkingAlias} SET id_list = array_remove(id_list, $1) WHERE date = $2;`, [body.email, today])
+      }
+      client.release()
+    }
+  })
+}
+
 async function parkingTableLviv(req, res){
   const today = new Date().toISOString().split("T")[0]
   const client = await pool.connect()
   try {
     var htmlContent
-    const dbData = await client.query("SELECT * FROM parking_lviv WHERE date = $1", [today])
-    if (data.rows) {
-      const userList = data.rows[0].id_list
+    const dbData = await client.query("SELECT * FROM parking_lviv_test WHERE date = $1", [today])
+    if (dbData.rows.length) {
+      const userList = dbData.rows[0].id_list
       //                                                    vvv CHANGE vvv
-      const parkingInfo = await client.query("SELECT * FROM parking_id_list WHERE email = ANY ($1)", [userList])
-      var tableContent = "<tr><th>Email</th><th>Car Number</th></tr>"
+      const parkingInfo = await client.query("SELECT * FROM parking_id_storage WHERE email = ANY ($1)", [userList])
+      var tableContent = "<tr style='border:1px solid black'><th>Email</th><th>Car Number</th></tr>"
       for (let user of userList) {
         const details = parkingInfo.rows.find(x => x.email === user)
         //                                                         vvv CHANGE vvv
-        tableContent += `<tr><td>${user}</td><td>${details ? details.car_number : "Not found"}</td><tr>`
+        tableContent += `<tr style="border:1px solid black"><td>${user}</td><td>${details ? details.id : "Not found"}</td><tr>`
       }
       htmlContent = `<table style="border:1px solid black">${tableContent}</table>`
     } else {
@@ -477,7 +511,7 @@ async function getAvigilon(req, res){
   const client = await pool.connect()
   try {
     const dates = JSON.parse(req.query.dates)
-    const datesString = dates.map(x => `date ='${x}'`).join(" OR ")
+    const datesString = dates.filter(x => /^\d{4}-\d{2}-\d{2}$/.test(x)).map(x => `date = '${x}'`).join(" OR ")
     var data = await client.query(`SELECT * FROM avigilon WHERE ${datesString};`)
     //console.log(data.rows)
     const response = {}
