@@ -1,6 +1,7 @@
 const http = require("http")
 const https = require("https")
 const { Pool, Client } = require('pg')
+const pgformat = require('pg-format')
 const base64 = require("base-64")
 const fs = require("fs")
 //const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args))
@@ -1137,7 +1138,8 @@ async function getParking(req, res){
     var isParkingAllowed = false
     var parkingId = await client.query(`SELECT * FROM parking_id_storage WHERE id = $1`, [req.query.cardID])
     if (parkingId.rows.length) {
-      var data = await client.query(`SELECT * FROM parking${req.query.location ? `_${req.query.location}` : ""} WHERE date = $1 AND $2 = ANY(id_list);`, [date, parkingId.rows[0].email.trim()])
+      const queryString = pgformat(`SELECT * FROM %I WHERE date = $1 AND $2 = ANY(id_list);`, `parking${req.query.location ? `_${req.query.location}` : ""}`)
+      var data = await client.query(queryString, [date, parkingId.rows[0].email.trim()])
       if (data.rows.length) isParkingAllowed = true
     }
     const responseXML = `<?xml version="1.0" encoding="UTF-8"?><result><access name="${req.query.cardID}">${isParkingAllowed ? 1 : 0}</access><error></error></result>`
@@ -1601,7 +1603,8 @@ async function collectCapacityV4(req, res){
       }
       var data
       try {
-        data = await client.query(`SELECT * FROM ${officeAlias} WHERE date = ANY($1);`, [dates])
+        const queryString = pgformat('SELECT * FROM %I WHERE date = ANY($1);', officeAlias)
+        data = await client.query(queryString, [dates])
         for (let row of data.rows) {
           const dateFormatted = new Date(row.date - row.date.getTimezoneOffset() * 60000).toISOString().split("T")[0]
           var reserved
