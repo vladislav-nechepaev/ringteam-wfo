@@ -4,8 +4,6 @@ const { Pool, Client } = require('pg')
 const pgformat = require('pg-format')
 const base64 = require("base-64")
 const fs = require("fs")
-//const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args))
-const fetch = require("node-fetch")
 const request = require("request-promise")
 const xmljs = require("xml-js")
 const schedule = require("node-schedule")
@@ -641,9 +639,8 @@ function urgentAvigilonUpdate(email, type){
 
 function getMeidoTime(req, res){
   const time = new Date()
-  fetch("https://www.timeapi.io/api/Time/current/zone?timeZone=Europe/Kiev").then(response => {
-    return response.json()
-  }).then(response => {
+  request("https://www.timeapi.io/api/Time/current/zone?timeZone=Europe/Kiev").then(responseRaw => {
+    const response = JSON.parse(responseRaw)
     const weekday = new Date(response.dateTime).getDay()
     //console.log(response.hour, response.minute, weekday)
     const isAllowed = !(weekday === 6 || weekday === 0 || (weekday === 5 && ((response.hour >= 19 && response.minute >= 30)) || (response.hour >= 20)))
@@ -654,9 +651,8 @@ function getMeidoTime(req, res){
 
 function getMeidoTimeTest(req, res){
   const time = new Date()
-  fetch("https://www.timeapi.io/api/Time/current/zone?timeZone=Europe/Kiev").then(response => {
-    return response.json()
-  }).then(response => {
+  request("https://www.timeapi.io/api/Time/current/zone?timeZone=Europe/Kiev").then(responseRaw => {
+    const response = JSON.parse(responseRaw)
     const weekday = new Date(response.dateTime).getDay()
     console.log(response.hour, response.minute, weekday)
     const isAllowed = !(weekday === 6 || weekday === 0 || (weekday === 5 && ((response.hour >= 19 && response.minute >= 30)) || (response.hour >= 20)))
@@ -667,12 +663,9 @@ function getMeidoTimeTest(req, res){
 
 function getHolidays(req, res){
   const todayYear = new Date().toISOString().split("-")[0]
-  fetch(`https://date.nager.at/api/v3/PublicHolidays/${todayYear}/UA`).then(response => {
-    //console.log(response)
-    return response.json()
-  }).then(data => {
-    //console.log(data)
-    const holidays = data.map(x => x.date)
+  request(`https://date.nager.at/api/v3/PublicHolidays/${todayYear}/UA`).then(responseRaw => {
+    const response = JSON.parse(responseRaw)
+    const holidays = response.map(x => x.date)
     res.writeHead(200)
     res.end(JSON.stringify(holidays))
   })
@@ -682,31 +675,25 @@ function getBambooData(req, resGlobal){
   //console.log('bamboo triggered')
   const email = req.query.email
 
-  fetch(`https://api.bamboohr.com/api/gateway.php/squadukraine/v1/employees/directory`, {
+  request(`https://api.bamboohr.com/api/gateway.php/squadukraine/v1/employees/directory`, {
     headers: {
       "Accept": "application/json",
       "Authorization": `Basic ${base64.encode(`bba2d3dbef917fcf5641af77bb4820c274ec7d02:x`)}`
     }
-  }).then(res => {
-    //console.log(res)
-    return res.json()
-  }).then(res => {
+  }).then(responseRaw => {
+    const res = JSON.parse(responseRaw)
     const employeeId = res.employees.find(x => x.workEmail === email)
     if (!employeeId) {
       resGlobal.writeHead(404)
       resGlobal.end()
     } else {
       //console.log(employeeId)
-      fetch(`https://api.bamboohr.com/api/gateway.php/squadukraine/v1/employees/${employeeId.id}/?fields=mobilePhone,4414,4416,4415,4417,4413`, {
+      request(`https://api.bamboohr.com/api/gateway.php/squadukraine/v1/employees/${employeeId.id}/?fields=mobilePhone,4414,4416,4415,4417,4413`, {
         headers: {
           "Accept": "application/json",
           "Authorization": `Basic ${base64.encode(`bba2d3dbef917fcf5641af77bb4820c274ec7d02:x`)}`
         }
-      }).then(res => {
-        return res.json()
-      }).then(res => {
-        //console.log(res)
-        const data = JSON.stringify(res)
+      }).then(data => {
         resGlobal.set({ "Content-Type": "application/json; charset=utf-8" })
         resGlobal.writeHead(200)
         resGlobal.end(data)
@@ -750,17 +737,15 @@ function getUserData(req, res){
   }
 
   function get(url, api_key){
-    return fetch(url, {
+    return request(url, {
       method: "GET",
       headers: {
         "Authorization": `Basic ${base64.encode(api_key)}`
       }
     }).then(res => {
-      if (res.status === 200) {
-        return res.json()
-      } else {
-        return false
-      }
+      return JSON.parse(res)
+    }).catch(() => {
+      return false
     })
   }
 
@@ -807,17 +792,15 @@ function getMeidoLogin(req, res){
   }
 
   function get(url, api_key){
-    return fetch(url, {
+    return request(url, {
       method: "GET",
       headers: {
         "Authorization": `Basic ${base64.encode(api_key)}`
       }
     }).then(res => {
-      if (res.status === 200) {
-        return res.json()
-      } else {
-        return false
-      }
+      return JSON.parse(res)
+    }).catch(() => {
+      return false
     })
   }
 
@@ -835,7 +818,7 @@ async function getMeidoLocations(req, res){
     "Lab72-1": "Lab72 / 1"
   }
   try {
-    const locations = await fetch(`https://analytics.getmeido.com/api/fs/location-list?token=${settings.meido_token}`).then(data => { return data.json() })
+    const locations = await request(`https://analytics.getmeido.com/api/fs/location-list?token=${settings.meido_token}`).then(data => { return JSON.parse(data) })
     locations.forEach(location => {
       if (exceptionsTitle[location.title]) location.title = exceptionsTitle[location.title]
     })
