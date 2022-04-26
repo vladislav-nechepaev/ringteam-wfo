@@ -16,29 +16,35 @@ const jssha = require('jssha')
 const app = express()
 app.use(express.static('public'))
 
-// ============================================================================
-// ============================================================================
-// ============================================================================
+var whitelist = ['https://ringteam.freshservice.com', 'https://ringteam-fs-test.freshservice.com']
+var corsOptions = {
+  origin: function (origin, callback) {
+    console.log(origin)
+    if (whitelist.includes(origin) || !origin) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  }
+}
 
-//app.post('/addcapacity', (req, res) => { handleCapacity(req, res, "inc") })
-
-//app.post('/removecapacity', (req, res) => { handleCapacity(req, res, "dec") })
+// ============================================================================
+// ============================================================================
+// ============================================================================
 
 app.post('/v2/addcapacity', (req, res) => { handleCapacityV3(req, res, "inc") })
 
 app.post('/v2/removecapacity', (req, res) => { handleCapacityV3(req, res, "dec") })
 
-//app.get('/getcapacity', cors(), (req, res) => { collectCapacity(req, res) })
+app.get('/v2/getcapacity', cors(corsOptions), (req, res) => { collectCapacityV3(req, res) })
 
-app.get('/v2/getcapacity', cors(), (req, res) => { collectCapacityV3(req, res) })
+app.get('/v4/getcapacity', cors(corsOptions), (req, res) => { collectCapacityV4(req, res) })
 
-app.get('/v4/getcapacity', cors(), (req, res) => { collectCapacityV4(req, res) })
-
-app.get('/getinventory', cors(), (req, res) => { handleInventory(req, res) })
+app.get('/getinventory', cors(corsOptions), (req, res) => { handleInventory(req, res) })
 
 app.post('/updateinventory', (req, res) => { updateInventory(req, res) })
 
-app.post('/replaceinventory', cors(), (req, res) => { replaceInventory(req, res) })
+app.post('/replaceinventory', cors(corsOptions), (req, res) => { replaceInventory(req, res) })
 
 app.post('/addparking', (req, res) => { handleParking(req, res, "inc") })
 
@@ -48,47 +54,47 @@ app.post('/v2/addparking', (req, res) => { handleParkingV2(req, res, "inc") })
 
 app.post('/v2/removeparking', (req, res) => { handleParkingV2(req, res, "dec") })
 
-app.get('/getparking', cors(), (req, res) => { getParking(req, res) })
+app.get('/getparking', cors(corsOptions), (req, res) => { getParking(req, res) })
 
-app.get('/getparkingbulk', cors(), (req, res) => { getParkingBulk(req, res) })
+app.get('/getparkingbulk', cors(corsOptions), (req, res) => { getParkingBulk(req, res) })
 
-app.get('/getparkingidentry', cors(), (req, res) => { getParkingIDEntry(req, res) })
+app.get('/getparkingidentry', cors(corsOptions), (req, res) => { getParkingIDEntry(req, res) })
 
-app.post('/updateparkingidentry', cors(), (req, res) => { updateParkingIDEntry(req, res) })
+app.post('/updateparkingidentry', cors(corsOptions), (req, res) => { updateParkingIDEntry(req, res) })
 
-app.post('/replaceparkingiddata', cors(), (req, res) => { replaceParkingIDData(req, res) })
+app.post('/replaceparkingiddata', cors(corsOptions), (req, res) => { replaceParkingIDData(req, res) })
 
-app.get('/getbamboodata', cors(), (req, res) => { getBambooData(req, res) })
+app.get('/getbamboodata', cors(corsOptions), (req, res) => { getBambooData(req, res) })
 
-app.get('/getmeidologin', cors(), (req,res) => { getMeidoLogin(req, res) })
+app.get('/getmeidologin', cors(corsOptions), (req,res) => { getMeidoLogin(req, res) })
 
-app.get('/getuserdata', cors(), (req,res) => { getUserData(req, res) })
+app.get('/getuserdata', cors(corsOptions), (req,res) => { getUserData(req, res) })
 
 app.get('/getmeidolocations', (req, res) => { getMeidoLocations(req, res) })
 
-app.get('/getholidays', cors(), (req, res) => { getHolidays(req, res) })
+app.get('/getholidays', cors(corsOptions), (req, res) => { getHolidays(req, res) })
 
-app.get('/getmeidotime', cors(), (req, res) => { getMeidoTime(req, res) })
+app.get('/getmeidotime', cors(corsOptions), (req, res) => { getMeidoTime(req, res) })
 
-app.get('/getmeidotimetest', cors(), (req, res) => { getMeidoTimeTest(req, res) })
+app.get('/getmeidotimetest', cors(corsOptions), (req, res) => { getMeidoTimeTest(req, res) })
 
 app.post('/avigilon/add', (req, res) => { handleAvigilon(req, res, "add") })
 
 app.post('/avigilon/remove', (req, res) => { handleAvigilon(req, res, "remove") })
 
-app.get('/avigilon/get', cors(), (req, res) => { getAvigilon(req, res) })
+app.get('/avigilon/get', cors(corsOptions), (req, res) => { getAvigilon(req, res) })
 
-app.put('/avigilon/modify', cors(), (req, res) => { modifyAvigilon(req, res) })
+app.put('/avigilon/modify', cors(corsOptions), (req, res) => { modifyAvigilon(req, res) })
 
-app.get('/dev/avigilon/get', cors(), (req, res) => { getAvigilonDev(req, res) })
+app.get('/dev/avigilon/get', cors(corsOptions), (req, res) => { getAvigilonDev(req, res) })
 
-app.get('/netsuite/teambuilding/participants', cors(), (req, res) => { netsuiteGetTeambuildingParticipants(req, res) })
+app.get('/netsuite/teambuilding/participants', cors(corsOptions), (req, res) => { netsuiteGetTeambuildingParticipants(req, res) })
 
 app.post('/officespace/create', (req, res) => { officeSpaceParkingCreate(req, res) })
 
 app.post('/officespace/cancel', (req, res) => { officeSpaceParkingCancel(req, res) })
 
-app.get('/parkinglist/lviv', (req, res) => { parkingTableLviv(req, res) })
+app.get('/parkinglist/lviv', cors(corsOptions), (req, res) => { parkingTableLviv(req, res) })
 
 // ============================================================================
 // ============================================================================
@@ -477,7 +483,7 @@ async function parkingTableLviv(req, res){
       for (let user of userList) {
         const details = parkingInfo.rows.find(x => x.email === user)
         //                                                         vvv CHANGE vvv
-        tableContent += `<tr style="border:1px solid black"><td>${user}</td><td>${details ? details.id : "Not found"}</td><tr>`
+        tableContent += `<tr style="border:1px solid black"><td>${user}</td><td>${details ? details.car_number : "Not found"}</td><tr>`
       }
       htmlContent = `<table style="border:1px solid black">${tableContent}</table>`
     } else {
@@ -962,62 +968,6 @@ function replaceParkingIDData(req, res){
   })
 }
 
-function handleParking(req, res, type){
-  if (base64.decode(req.headers.authorization) !== settings.access_token) {
-    res.writeHead(403, 'Wrong access token');
-    console.log(base64.decode(req.headers.authorization), settings.access_token)
-    res.end();
-    throw 'Wrong access token'
-  }
-  var data = ""
-  req.on('data', chunk => {
-    data += chunk
-  })
-  req.on('end', async () => {
-    const body = JSON.parse(data)
-    if (!body.id || !body.dates) {
-      res.writeHead(400, 'Not enough data')
-      res.end()
-      throw 'Payload error'
-    }
-    body.dates.forEach(date => {
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-        res.writeHead(400, 'Incorrect date format (expected YYYY-MM-DD)')
-        res.end()
-        throw 'Payload error (malformed dates)'
-      }
-    })
-    const client = await pool.connect()
-    try {
-      var parkingAlias = body.parkingtest ? "parking_test" : "parking"
-      console.log(body.mainoffice)
-      const secondaryParking = {
-        "Lviv": "parking_lviv",
-        "Lviv_test": "parking_lviv_test"
-      }
-      if (body.mainoffice) {
-        for (let office in secondaryParking) {
-          if (body.mainoffice === office) parkingAlias = secondaryParking[office]
-        }
-      }
-      console.log(parkingAlias)
-      await client.query(pgActions.createParkingTable())
-      for (let date of body.dates) {
-        if (type === "inc") await client.query(`INSERT INTO ${parkingAlias}(id_list, date) VALUES (array[$1], $2) ON CONFLICT (date) DO UPDATE SET id_list = array_append(${parkingAlias}.id_list, $1);`, [body.id, date])
-        if (type === "dec") await client.query(`UPDATE ${parkingAlias} SET id_list = array_remove(id_list, $1) WHERE date = $2;`, [body.id, date])
-      }
-      res.writeHead(200, "Success!")
-      res.end()
-    } catch(e) {
-      console.error(e)
-      res.writeHead(500, "Error!")
-      res.end()
-    } finally {
-      client.release()
-    }
-  })
-}
-
 function handleParkingV2(req, res, type){
   if (base64.decode(req.headers.authorization) !== settings.access_token) {
     res.writeHead(403, 'Wrong access token');
@@ -1169,129 +1119,6 @@ async function getParkingBulk(req, res){
   }
 }
 
-/*
-function handleCapacity(req, res, type){
-  //console.log(req.headers.authorization, base64.decode(req.headers.authorization), settings.access_token)
-  if (base64.decode(req.headers.authorization) !== settings.access_token) {
-    res.writeHead(403, 'Wrong access token');
-    res.end();
-    throw 'Wrong access token'
-  }
-  var data = ""
-  req.on('data', chunk => {
-    data += chunk
-  })
-  req.on('end', async () => {
-    //console.log(data)
-    const body = JSON.parse(data)
-    if (!body.office || !body.dates) {
-      res.writeHead(400, 'Not enough data')
-      res.end()
-      throw 'Payload error'
-    }
-    body.dates.forEach(date => {
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-        res.writeHead(400, 'Incorrect date format (expected YYYY-MM-DD)')
-        res.end()
-        throw 'Payload error (malformed dates)'
-      }
-    })
-    const client = await pool.connect()
-    try {
-      await client.query(pgActions.createCapacityTable(body.office.toLowerCase()))
-      for (let date of body.dates) {
-        if (type === "inc") await client.query(`SELECT add_capacity($1, $2);`, [date, body.office.toLowerCase()])
-        if (type === "dec") await client.query(`SELECT remove_capacity($1, $2);`, [date, body.office.toLowerCase()])
-      }
-      res.writeHead(200, "Success!")
-      res.end()
-    } catch(e) {
-      console.error(e)
-      res.writeHead(500, "Error!")
-      res.end()
-    } finally {
-      client.release()
-    }
-  })
-}
-*/
-
-function handleCapacityV2(req, res, type){
-  if (base64.decode(req.headers.authorization) !== settings.access_token) {
-    res.writeHead(403, 'Wrong access token');
-    res.end();
-    throw 'Wrong access token'
-  }
-  var data = ""
-  req.on('data', chunk => {
-    data += chunk
-  })
-  req.on('end', async () => {
-    //console.log(data)
-    const body = JSON.parse(data)
-    /*
-    if (!body.office || !body.dates) {
-      res.writeHead(400, 'Not enough data')
-      res.end()
-      throw 'Payload error'
-    }
-    body.dates.forEach(date => {
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-        res.writeHead(400, 'Incorrect date format (expected YYYY-MM-DD)')
-        res.end()
-        throw 'Payload error (malformed dates)'
-      }
-    })
-    */
-    const client = await pool.connect()
-    try {
-      if (type === "inc") {
-        var capacityCheck = true
-        //console.log(body)
-        for (let office in body) {
-          const officeAlias = office.toLowerCase().replace(/ /g, "_")
-          await client.query(pgActions.createCapacityTable(officeAlias))
-          for (let date of body[office]) {
-            const capacity = await client.query(`SELECT full_day FROM ${officeAlias} WHERE date = $1;`, [date])
-            if (capacity.rows.length && capacity.rows[0].full_day >= settings.office_capacity[officeAlias]) {
-              capacityCheck = false
-            }
-          }
-        }
-        if (capacityCheck) {
-          for (let office in body) {
-            const officeAlias = office.toLowerCase().replace(/ /g, "_")
-            for (let date of body[office]) {
-              await client.query(`SELECT add_capacity($1, $2);`, [date, officeAlias])
-            }
-          }
-          res.writeHead(200, "Success!")
-          res.end()
-        } else {
-          res.writeHead(409, "Capacity exceeded")
-          res.end()
-        }
-      }
-      if (type === "dec") {
-        for (let office in body) {
-          const officeAlias = office.toLowerCase().replace(/ /g, "_")
-          for (let date of body[office]) {
-            await client.query(`SELECT remove_capacity($1, $2);`, [date, officeAlias])
-          }
-          res.writeHead(200, "Success!")
-          res.end()
-        }
-      }
-    } catch(e) {
-      console.error(e)
-      res.writeHead(500, "Error!")
-      res.end()
-    } finally {
-      client.release()
-    }
-  })
-}
-
 function handleCapacityV3(req, res, type){
   if (base64.decode(req.headers.authorization) !== settings.access_token) {
     res.writeHead(403, 'Wrong access token');
@@ -1377,93 +1204,6 @@ function handleCapacityV3(req, res, type){
   })
 }
 
-async function collectCapacityV2(req, res){
-  //console.log(req.query)
-  if (!req.query.office || !req.query.dates) {
-    res.writeHead(400, 'Not enough data')
-    res.end()
-    console.error("Error in collectCapacityV2, query below:")
-    console.error(req.query)
-    //throw 'Query error'
-  }
-  const dates = JSON.parse(req.query.dates)
-  const officeList = JSON.parse(req.query.office)
-  dates.forEach(date => {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-      res.writeHead(400, 'Not all dates are in correct format (expected YYYY-MM-DD)')
-      res.end()
-      throw 'Query formatting error'
-    }
-  })
-  const client = await pool.connect()
-  try {
-    var responseData = {}
-    for (let office of officeList) {
-      const officeAlias = office.toLowerCase().replace(/ /g, "_")
-      responseData[office] = {
-        limit: settings.office_capacity[officeAlias],
-        capacity: {}
-      }
-      var data
-      try {
-        data = await client.query(`SELECT * FROM ${officeAlias} WHERE date = ANY($1);`, [dates])
-        for (let row of data.rows) {
-          responseData[office].capacity[new Date(row.date - row.date.getTimezoneOffset() * 60000).toISOString().split("T")[0]] = row.full_day
-        }
-        for (let date of dates) {
-          if (!responseData[office].capacity[date]) responseData[office].capacity[date] = 0
-        }
-      } catch(e) {
-        if (e.code === '42P01') {
-          for (let date of dates) {
-            responseData[office].capacity[date] = 0
-          }
-        } else {
-          console.error(e)
-        }
-      }
-    }
-    if (req.query.getparking) {
-      const secondaryParking = {
-        "Lviv": "parking_lviv",
-        "Lviv_test": "parking_lviv_test"
-      }
-      const parkingAlias = req.query.parkingtest ? "parking_test" : "parking"
-      var parkingAliasSearch = parkingAlias
-      if (req.query.mainoffice) {
-        for (let office in secondaryParking) {
-          if (req.query.mainoffice === office) parkingAliasSearch = secondaryParking[office]
-        }
-      }
-      responseData[parkingAlias] = {
-        limit: settings.office_capacity[parkingAliasSearch],
-        capacity: {}
-      }
-      for (let date of dates) {
-        const dbData = await client.query(`SELECT * FROM ${parkingAliasSearch} WHERE date = $1;`, [date])
-        if (dbData.rows.length) {
-          responseData[parkingAlias].capacity[date] = dbData.rows[0].id_list.length
-        } else {
-          responseData[parkingAlias].capacity[date] = 0
-        }
-      }
-    }
-    res.writeHead(200)
-    res.end(JSON.stringify(responseData))
-  } catch(e) {
-    //console.error('error!!!!!')
-    console.error(e)
-    if (e.code === '42P01') {
-      res.writeHead(404, "No data for the selected office")
-    } else {
-      res.writeHead(500, "Error!")
-    }
-    res.end()
-  } finally {
-    client.release()
-  }
-}
-
 async function collectCapacityV3(req, res){
   //console.log(req.query)
   if (!req.query.office || !req.query.dates) {
@@ -1493,8 +1233,8 @@ async function collectCapacityV3(req, res){
       }
       var data
       try {
-        console.log(officeAlias)
-        data = await client.query(`SELECT * FROM ${officeAlias} WHERE date = ANY($1);`, [dates])
+        const queryString = pgformat('SELECT * FROM %I WHERE date = ANY($1);', officeAlias)
+        data = await client.query(queryString, [dates])
         for (let row of data.rows) {
           responseData[office].capacity[new Date(row.date - row.date.getTimezoneOffset() * 60000).toISOString().split("T")[0]] = row.emails.length
         }
@@ -1528,7 +1268,8 @@ async function collectCapacityV3(req, res){
         capacity: {}
       }
       for (let date of dates) {
-        const dbData = await client.query(`SELECT * FROM ${parkingAliasSearch} WHERE date = $1;`, [date])
+        const queryString = pgformat('SELECT * FROM %I WHERE date = ANY($1);', parkingAliasSearch\)
+        const dbData = await client.query(queryString, [date])
         if (dbData.rows.length) {
           responseData[parkingAlias].capacity[date] = dbData.rows[0].id_list.length
         } else {
