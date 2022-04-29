@@ -958,7 +958,7 @@ function replaceParkingIDData(req, res){
       await client.query('DELETE FROM parking_id_storage')
       for (let row of rows) {
         const rowParsed = row[1] === "" ? [row[0], null] : row
-        if (row[0] !== "") await client.query('INSERT INTO parking_id_storage (email, id) VALUES ($1, $2)', rowParsed)
+        if (row[0] !== "") await client.query('INSERT INTO parking_id_storage (email, car_number) VALUES ($1, $2)', rowParsed)
       }
       res.writeHead(201, "Success")
       res.end()
