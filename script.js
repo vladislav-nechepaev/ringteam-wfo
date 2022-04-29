@@ -420,7 +420,9 @@ function officeSpaceParkingCreate(req, res){
     res.end()
     const parkingAlias = settings.parking_officespace[body.floor]
     if (parkingAlias) {
-      const today = new Date().toISOString().split("T")[0]
+      const date = new Date()
+      date.setHours(date.getHours + 3)
+      const today = date.toISOString().split("T")[0]
       const parkingPlatformaAliases = [
         "parking_platforma",
         "parking_platforma_test"
@@ -451,7 +453,9 @@ function officeSpaceParkingCancel(req, res){
     res.end()
     const parkingAlias = settings.parking_officespace[body.floor]
     if (parkingAlias) {
-      const today = new Date().toISOString().split("T")[0]
+      const date = new Date()
+      date.setHours(date.getHours + 3)
+      const today = date.toISOString().split("T")[0]
       const parkingPlatformaAliases = [
         "parking_platforma",
         "parking_platforma_test"
