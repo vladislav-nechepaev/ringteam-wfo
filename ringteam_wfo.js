@@ -86,7 +86,7 @@ jQuery(document).on('ready', async function(){
     fsNative.addloc_text.parentNode.hidden = true
     fsNative.additional_locations.forEach(elem => { elem.parentNode.hidden = true })
   }
-  for (let office of officeDelay) {
+  for (let office in officeDelay) {
     officeOptionsStorage[office] = officeSelector.querySelector(`option[value=${office}]`).clone()
   }
 
