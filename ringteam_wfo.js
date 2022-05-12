@@ -314,7 +314,7 @@ ${parkingActive ? "&getparking=true" : ""}`)
           if (!officeSelector.querySelector(`option[value=${office}]`) && officeOptionsStorage[office]) officeSelector.appendChild(officeOptionsStorage[office])
         } else {
           console.log("remove", office)
-          if (officeSelector.querySelector(`option[value=${office}]`)) delete officeSelector.querySelector(`option[value=${office}]`)
+          if (officeSelector.querySelector(`option[value=${office}]`)) officeSelector.querySelector(`option[value=${office}]`).remove()
         }
       }
     }
