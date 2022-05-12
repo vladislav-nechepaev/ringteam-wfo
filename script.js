@@ -60,9 +60,9 @@ app.get('/getparkingbulk', cors(corsOptions), (req, res) => { getParkingBulk(req
 
 app.get('/getparkingidentry', cors(corsOptions), (req, res) => { getParkingIDEntry(req, res) })
 
-app.post('/updateparkingidentry', cors(corsOptions), (req, res) => { updateParkingIDEntry(req, res) })
+app.post('/updateparkingidentry', (req, res) => { updateParkingIDEntry(req, res) })
 
-app.post('/replaceparkingiddata', cors(corsOptions), (req, res) => { replaceParkingIDData(req, res) })
+app.post('/replaceparkingiddata', (req, res) => { replaceParkingIDData(req, res) })
 
 app.get('/getbamboodata', cors(corsOptions), (req, res) => { getBambooData(req, res) })
 
@@ -88,7 +88,7 @@ app.put('/avigilon/modify', cors(corsOptions), (req, res) => { modifyAvigilon(re
 
 app.get('/dev/avigilon/get', cors(corsOptions), (req, res) => { getAvigilonDev(req, res) })
 
-app.get('/netsuite/teambuilding/participants', cors(corsOptions), (req, res) => { netsuiteGetTeambuildingParticipants(req, res) })
+app.get('/netsuite/teambuilding/participants', cors(), (req, res) => { netsuiteGetTeambuildingParticipants(req, res) })
 
 app.post('/officespace/create', (req, res) => { officeSpaceParkingCreate(req, res) })
 
@@ -306,11 +306,13 @@ async function prepareTable(){
 }
 
 async function netsuiteGetTeambuildingParticipants(req, res){
+  var isProd = false
   if (!req.query.emails) {
     res.writeHead(400, "Not enough data")
     res.end('Not enough data')
   } else {
-    const url = "https://5138697-sb1.restlets.api.netsuite.com/app/site/hosting/restlet.nl?script=1307&deploy=1" + "&consultants=" + encodeURIComponent(req.query.emails)
+    const isProd = !!req.query.prod
+    const url = `https://5138697${isProd ? "" : "-sb1"}.restlets.api.netsuite.com/app/site/hosting/restlet.nl?script=1307&deploy=1` + "&consultants=" + encodeURIComponent(req.query.emails)
     const headers = prepareHeaders(url)
     try {
       const response = await request.get(url, { headers: headers, followRedirect: true })
@@ -327,8 +329,9 @@ async function netsuiteGetTeambuildingParticipants(req, res){
   function prepareHeaders(url){
     const timestamp = Math.floor(new Date().valueOf() / 1000)
     const nonce = generateNonce()
-    const signature = prepareOAuthSignature(timestamp, nonce, settings.netsuite, url)
-    const authHeader = `OAuth realm="${settings.netsuite.realm}",oauth_consumer_key="${settings.netsuite.consumerKey}",oauth_token="${settings.netsuite.token}",oauth_signature_method="HMAC-SHA256",oauth_timestamp="${timestamp}",oauth_nonce="${nonce}",oauth_version="1.0",oauth_signature="${encodeURIComponent(signature)}"`
+    const iparams = isProd ? settings.netsuite.prod : settings.netsuite.test
+    const signature = prepareOAuthSignature(timestamp, nonce, iparams, url)
+    const authHeader = `OAuth realm="${iparams.realm}",oauth_consumer_key="${iparams.consumerKey}",oauth_token="${iparams.token}",oauth_signature_method="HMAC-SHA256",oauth_timestamp="${timestamp}",oauth_nonce="${nonce}",oauth_version="1.0",oauth_signature="${encodeURIComponent(signature)}"`
     const headers = {
       "Authorization": authHeader,
       "Content-Type": "application/json",
@@ -338,15 +341,15 @@ async function netsuiteGetTeambuildingParticipants(req, res){
   }
 
   function prepareOAuthSignature(timestamp, nonce, iparams, url){
-    const hmacKey = `${settings.netsuite.consumerSecret}&${settings.netsuite.tokenSecret}`
+    const hmacKey = `${iparams.consumerSecret}&${iparams.tokenSecret}`
     const shaObj = new jssha("SHA-256", "TEXT", {
       hmacKey: { value: hmacKey, format: "TEXT" }
     })
     const urlParts = url.split("?")
     const urlParams = urlParts[1].split("&")
     var params = [
-      `oauth_consumer_key=${settings.netsuite.consumerKey}`,
-      `oauth_token=${settings.netsuite.token}`,
+      `oauth_consumer_key=${iparams.consumerKey}`,
+      `oauth_token=${iparams.token}`,
       `oauth_signature_method=HMAC-SHA256`,
       `oauth_nonce=${nonce}`,
       `oauth_timestamp=${timestamp}`,
@@ -421,7 +424,7 @@ function officeSpaceParkingCreate(req, res){
     const parkingAlias = settings.parking_officespace[body.floor]
     if (parkingAlias) {
       const date = new Date()
-      date.setHours(date.getHours + 3)
+      date.setHours(date.getHours() + 3)
       const today = date.toISOString().split("T")[0]
       const parkingPlatformaAliases = [
         "parking_platforma",
@@ -433,7 +436,7 @@ function officeSpaceParkingCreate(req, res){
         console.log("OfficeSpace v2 parking: Not supported yet!")
         // =====================================================
       } else {
-        await client.query(`INSERT INTO ${parkingAlias}(id_list, date) VALUES (array[$1], $2) ON CONFLICT (date) DO UPDATE SET id_list = array_append(${parkingAlias}.id_list, $1);`, [body.email, today])
+        await client.query(`INSERT INTO ${parkingAlias}(id_list, date) VALUES (array[$1], $2) ON CONFLICT (date) DO UPDATE SET id_list = array_append(${parkingAlias}.id_list, $1);`, [`${body.email}//${body.spot_label}`, today])
       }
       client.release()
     }
@@ -454,7 +457,7 @@ function officeSpaceParkingCancel(req, res){
     const parkingAlias = settings.parking_officespace[body.floor]
     if (parkingAlias) {
       const date = new Date()
-      date.setHours(date.getHours + 3)
+      date.setHours(date.getHours() + 3)
       const today = date.toISOString().split("T")[0]
       const parkingPlatformaAliases = [
         "parking_platforma",
@@ -466,7 +469,7 @@ function officeSpaceParkingCancel(req, res){
         console.log("OfficeSpace v2 parking: Not supported yet!")
         // =====================================================
       } else {
-        await client.query(`UPDATE ${parkingAlias} SET id_list = array_remove(id_list, $1) WHERE date = $2;`, [body.email, today])
+        await client.query(`UPDATE ${parkingAlias} SET id_list = array_remove(id_list, $1) WHERE date = $2;`, [`${body.email}//${body.spot_label}`, today])
       }
       client.release()
     }
@@ -480,14 +483,14 @@ async function parkingTableLviv(req, res){
     var htmlContent
     const dbData = await client.query("SELECT * FROM parking_lviv_test WHERE date = $1", [today])
     if (dbData.rows.length) {
-      const userList = dbData.rows[0].id_list
+      const userList = dbData.rows[0].id_list.map(x => x.split("//"))
       //                                                    vvv CHANGE vvv
-      const parkingInfo = await client.query("SELECT * FROM parking_id_storage WHERE email = ANY ($1)", [userList])
-      var tableContent = "<tr style='border:1px solid black'><th>Email</th><th>Car Number</th></tr>"
+      const parkingInfo = await client.query("SELECT * FROM parking_id_storage WHERE email = ANY ($1)", [userList.map(x => x[0])])
+      var tableContent = "<tr><th style='border:1px solid black'>Email</th><th style='border:1px solid black'>Car Number</th></tr><th style='border:1px solid black'>Parking Spot</th></tr>"
       for (let user of userList) {
-        const details = parkingInfo.rows.find(x => x.email === user)
+        const details = parkingInfo.rows.find(x => x.email === user[0])
         //                                                         vvv CHANGE vvv
-        tableContent += `<tr style="border:1px solid black"><td>${user}</td><td>${details ? details.car_number : "Not found"}</td><tr>`
+        tableContent += `<tr><td style='border:1px solid black'>${user[0]}</td><td style='border:1px solid black'>${details ? details.car_number : "Not found"}</td><td style='border:1px solid black'>${user[1] ? user[1] : "Not found"}</td><tr>`
       }
       htmlContent = `<table style="border:1px solid black">${tableContent}</table>`
     } else {
@@ -881,10 +884,10 @@ async function getParkingIDEntry(req, res){
   try {
     var data = await client.query(`SELECT * FROM parking_id_storage WHERE email = $1;`, [req.query.email])
     //console.log(data.rows)
-    if (data.rows.length && data.rows[0].id && data.rows[0].id.length) {
+    if (data.rows.length && data.rows[0].car_number && data.rows[0].car_number.length) {
       const responseData = {
         email: data.rows[0].email,
-        id: data.rows[0].id
+        id: data.rows[0].car_number
       }
       res.writeHead(200)
       res.end(JSON.stringify(responseData))
@@ -902,11 +905,13 @@ async function getParkingIDEntry(req, res){
 }
 
 function updateParkingIDEntry(req, res){
+  /*
   if (base64.decode(req.headers.authorization) !== settings.access_token) {
     res.writeHead(401, 'Wrong access token');
     res.end();
     throw 'Wrong access token'
   }
+  */
   var data = ""
   req.on('data', chunk => {
     data += chunk
@@ -920,12 +925,12 @@ function updateParkingIDEntry(req, res){
     }
     const client = await pool.connect()
     try {
-      await client.query(`INSERT INTO parking_id_storage(email, id) VALUES ($1, $2) ON CONFLICT (email) DO UPDATE SET id = $2`, [body.email, body.id === "" ? null : body.id])
+      await client.query(`INSERT INTO parking_id_storage(email, car_number) VALUES ($1, $2) ON CONFLICT (email) DO UPDATE SET car_number = $2`, [body.email, body.id === "" ? null : body.id])
       res.writeHead(200, "Success!")
       res.end()
     } catch(e) {
       if (e.code === "23505") {
-        const conflict = await client.query(`SELECT * FROM parking_id_storage WHERE id = $1`, [body.id])
+        const conflict = await client.query(`SELECT * FROM parking_id_storage WHERE car_number = $1`, [body.id])
         console.log(conflict.rows[0].email)
         const conflictEmail = conflict.rows[0].email
         res.writeHead(403)
@@ -942,17 +947,20 @@ function updateParkingIDEntry(req, res){
 }
 
 function replaceParkingIDData(req, res){
+  /*
   if (base64.decode(req.headers.authorization) !== settings.access_token) {
     res.writeHead(403, 'Wrong access token');
     res.end();
     throw 'Wrong access token'
   }
+  */
   var data = ""
   req.on('data', chunk => {
     data += chunk
   })
   req.on('end', async () => {
     const rows = JSON.parse(data)
+    console.log(rows)
     const client = await pool.connect()
     try {
       await client.query('DELETE FROM parking_id_storage')
@@ -1272,7 +1280,7 @@ async function collectCapacityV3(req, res){
         capacity: {}
       }
       for (let date of dates) {
-        const queryString = pgformat('SELECT * FROM %I WHERE date = ANY($1);', parkingAliasSearch\)
+        const queryString = pgformat('SELECT * FROM %I WHERE date = ANY($1);', parkingAliasSearch)
         const dbData = await client.query(queryString, [date])
         if (dbData.rows.length) {
           responseData[parkingAlias].capacity[date] = dbData.rows[0].id_list.length
