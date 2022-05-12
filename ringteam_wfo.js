@@ -39,6 +39,7 @@ jQuery(document).on('ready', async function(){
   var activeDateCount = 0
   const today = new Date()
   const todayGlobal = today.toLocaleDateString()
+  const [thisWeekStart, nextWeekStart] = getWeekStarts()
   var selectedDatesGlobal = []
   var capacityCache
   var capacityCheckMain = true
@@ -55,6 +56,7 @@ jQuery(document).on('ready', async function(){
   var covidQuestions = false
   var meidoTimeCheck = false
   var meidoShown = false
+  var officeOptionsStorage = {}
 
   //const durationSelector = replaceInputWithDropdown(fsFields.duration, durationList, "duration")
   //durationSelector.parentNode.hidden = true
@@ -84,7 +86,9 @@ jQuery(document).on('ready', async function(){
     fsNative.addloc_text.parentNode.hidden = true
     fsNative.additional_locations.forEach(elem => { elem.parentNode.hidden = true })
   }
-
+  for (let office of officeDelay) {
+    officeOptionsStorage[office] = officeSelector.querySelector(`option[value=${office}]`).clone()
+  }
 
       //add hotDeskCheckbox
   const hotdeskCheckboxLabel = document.createTextNode("I would like to book a hot desk.");
@@ -297,6 +301,19 @@ ${parkingActive ? "&getparking=true" : ""}`)
     // ===============================================
     // ===============================================
     // ===============================================
+    function handleOfficeDelay(){
+      for (let office of officeDelay) {
+        if (
+          (nextWeekStart <= officeDelay[office] && values.access_week === "Next week")
+          || (thisWeekStart <= officeDelay[office])
+        ) {
+          if (!officeSelector.querySelector(`option[value=${office}]`)) officeSelector.appendChild(officeOptionsStorage[office])
+        } else {
+          if (officeSelector.querySelector(`option[value=${office}]`) && officeOptionsStorage[office]) delete officeSelector.querySelector(`option[value=${office}]`)
+        }
+      }
+    }
+
     function checkCovidQuestions(){
       covidQuestions = true
       covidAllSelected = true
@@ -1047,4 +1064,19 @@ function createCovidQuestions(){
 function checkBrowser(){
   var isSafari = /constructor/i.test(window.HTMLElement) || (function (p) { return p.toString() === "[object SafariRemoteNotification]"; })(!window['safari'] || (typeof safari !== 'undefined' && window['safari'].pushNotification));
   return isSafari
+}
+
+function getWeekStarts(){
+    const today = new Date()
+    var thisWeek, nextWeek
+    thisDay = today.getDay()
+    if (thisDay === 0) thisDay = 7
+    thisWeek = new Date()
+    thisWeek.setHours(thisWeek.getHours() - (thisDay - 1)*24)
+    nextWeek = new Date()
+    nextWeek.setHours(nextWeek.getHours() + (7 - thisDay + 1)*24)
+    return [
+      thisWeek.toISOString().split("T")[0]
+      nextWeek.toISOString().split("T")[0]
+    ]
 }
