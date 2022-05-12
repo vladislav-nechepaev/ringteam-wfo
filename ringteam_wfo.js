@@ -282,6 +282,7 @@ ${parkingActive ? "&getparking=true" : ""}`)
     //const showCarPlate = fullLocationList.includes("Lviv") || fullLocationList.includes("Lviv_test")
     fsNative.car_plate.parentNode.hidden = !parkingLvivCondition()
     // ===============================================
+    handleOfficeDelay()
     checkCovidQuestions()
     displayHotdeskSection()
     // ===============================================
