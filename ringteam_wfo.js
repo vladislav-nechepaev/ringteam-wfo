@@ -306,8 +306,8 @@ ${parkingActive ? "&getparking=true" : ""}`)
     function handleOfficeDelay(){
       for (let office in officeDelay) {
         if (
-          (nextWeekStart <= officeDelay[office] && values.access_week === "Next week")
-          || (thisWeekStart <= officeDelay[office])
+          (nextWeekStart >= officeDelay[office] && values.access_week === "Next week")
+          || (thisWeekStart >= officeDelay[office])
         ) {
           console.log("add", office)
           if (!officeSelector.querySelector(`option[value=${office}]`) && officeOptionsStorage[office]) officeSelector.appendChild(officeOptionsStorage[office])
