@@ -1077,7 +1077,7 @@ function getWeekStarts(){
     nextWeek = new Date()
     nextWeek.setHours(nextWeek.getHours() + (7 - thisDay + 1)*24)
     return [
-      thisWeek.toISOString().split("T")[0]
+      thisWeek.toISOString().split("T")[0],
       nextWeek.toISOString().split("T")[0]
     ]
 }
