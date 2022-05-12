@@ -90,6 +90,7 @@ jQuery(document).on('ready', async function(){
   for (let office in officeDelay) {
     console.log(officeSelector.querySelector(`option[value=${office}]`))
     officeOptionsStorage[office] = officeSelector.querySelector(`option[value=${office}]`).cloneNode()
+    officeOptionsStorage[office].innerHTML = office
   }
 
       //add hotDeskCheckbox
