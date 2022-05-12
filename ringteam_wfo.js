@@ -308,9 +308,11 @@ ${parkingActive ? "&getparking=true" : ""}`)
           (nextWeekStart <= officeDelay[office] && values.access_week === "Next week")
           || (thisWeekStart <= officeDelay[office])
         ) {
-          if (!officeSelector.querySelector(`option[value=${office}]`)) officeSelector.appendChild(officeOptionsStorage[office])
+          console.log("add", office)
+          if (!officeSelector.querySelector(`option[value=${office}]`) && officeOptionsStorage[office]) officeSelector.appendChild(officeOptionsStorage[office])
         } else {
-          if (officeSelector.querySelector(`option[value=${office}]`) && officeOptionsStorage[office]) delete officeSelector.querySelector(`option[value=${office}]`)
+          console.log("remove", office)
+          if (officeSelector.querySelector(`option[value=${office}]`)) delete officeSelector.querySelector(`option[value=${office}]`)
         }
       }
     }
