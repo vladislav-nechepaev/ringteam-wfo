@@ -88,7 +88,8 @@ jQuery(document).on('ready', async function(){
     fsNative.additional_locations.forEach(elem => { elem.parentNode.hidden = true })
   }
   for (let office in officeDelay) {
-    officeOptionsStorage[office] = officeSelector.querySelector(`option[value=${office}]`).clone()
+    console.log(officeSelector.querySelector(`option[value=${office}]`))
+    officeOptionsStorage[office] = officeSelector.querySelector(`option[value=${office}]`).cloneNode()
   }
 
       //add hotDeskCheckbox
