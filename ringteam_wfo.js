@@ -303,7 +303,7 @@ ${parkingActive ? "&getparking=true" : ""}`)
     // ===============================================
     // ===============================================
     function handleOfficeDelay(){
-      for (let office of officeDelay) {
+      for (let office in officeDelay) {
         if (
           (nextWeekStart <= officeDelay[office] && values.access_week === "Next week")
           || (thisWeekStart <= officeDelay[office])
