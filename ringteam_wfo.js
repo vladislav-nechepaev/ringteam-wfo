@@ -40,6 +40,7 @@ jQuery(document).on('ready', async function(){
   const today = new Date()
   const todayGlobal = today.toLocaleDateString()
   const [thisWeekStart, nextWeekStart] = getWeekStarts()
+  console.log(thisWeekStart, nextWeekStart)
   var selectedDatesGlobal = []
   var capacityCache
   var capacityCheckMain = true
