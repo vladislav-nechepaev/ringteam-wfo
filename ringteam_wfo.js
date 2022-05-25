@@ -232,7 +232,7 @@ ${parkingActive ? "&getparking=true" : ""}`)
 
   fetch(`https://freshservicecounter.ringteam.com/getparkingidentry?email=${userEmail}`).then(res => {
     console.log("Parking ID response: ", res.status)
-    if (res.status === 200) hasParkingId = true
+    if (res.status === 200 || parkingTest) hasParkingId = true
   })
 
   fetch(`https://freshservicecounter.ringteam.com/getmeidologin?id=${userId}${middlewareTestRequests ? "&test=true" : ""}`).then(res => {
