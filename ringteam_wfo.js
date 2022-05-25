@@ -555,6 +555,7 @@ ${parkingActive ? "&getparking=true" : ""}`)
           timeNativeElem.value = "00:00"
           if (capacityActive) addLocationWrapper.style.display = "block"
           if (parkingActive) {
+            console.log("parking active, conditions: ", checkParkingConditions())
             if (checkParkingConditions()) {
               parkingWrapper.show()
             } else {
