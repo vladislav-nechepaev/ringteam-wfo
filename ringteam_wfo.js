@@ -275,7 +275,7 @@ ${parkingActive ? "&getparking=true" : ""}`)
       var weekday = new Date(date).getDay()
       if (weekday !== 6 && weekday !== 0) weekendOnly = false
     })
-    window.parkingActive = datesInRequest.length
+    window.parkingActive = !!datesInRequest.length
     console.log(parkingActive)
     // ===============================================
 /*
