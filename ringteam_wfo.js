@@ -586,7 +586,7 @@ ${parkingActive ? "&getparking=true" : ""}`)
             if (officeParkingLabels[labelText].includes(values.office)) label.innerHTML = labelText
           }
         }
-        fetch(`https://freshservicecounter.ringteam.com/v2/getcapacity?
+        fetch(`https://freshservicecounter.ringteam.com/v4/getcapacity?
 office=${JSON.stringify(officeCapacity)}
 &dates=${JSON.stringify(selectedDates)}
 &mainoffice=${values.office}
