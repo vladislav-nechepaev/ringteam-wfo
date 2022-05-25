@@ -205,7 +205,7 @@ jQuery(document).on('ready', async function(){
       } else {
         const mainOffice = fsNative.office.value
         const addLocInfo = JSON.parse(fsNative.addloc.innerHTML)
-        const data = await fetch(`https://freshservicecounter.ringteam.com/v2/getcapacity?
+        const data = await fetch(`https://freshservicecounter.ringteam.com/v4/getcapacity?
 office=${JSON.stringify(officeCapacity)}
 &dates=${selectedDatesGlobal}
 &mainoffice=${officeSelector.value}
