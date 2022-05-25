@@ -240,6 +240,7 @@ ${parkingActive ? "&getparking=true" : ""}`)
     //if (res.status === 200) hasMeidoId = true
     return res.json()
   }).then(res => {
+    console.log(res)
     if (res.meido) hasMeidoId = true
     if (res.platforma_parking_spot) hasPersonalParkingSpot = res.platforma_parking_spot
   })
