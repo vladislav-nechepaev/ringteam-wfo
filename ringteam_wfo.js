@@ -242,7 +242,7 @@ ${parkingActive ? "&getparking=true" : ""}`)
   }).then(res => {
     console.log(res)
     if (res.meido) hasMeidoId = true
-    if (res.platforma_parking_spot) hasPersonalParkingSpot = res.platforma_parking_spot
+    if (res.platforma_parking_spot) personalParkingSpotId = res.platforma_parking_spot
   })
 
 
