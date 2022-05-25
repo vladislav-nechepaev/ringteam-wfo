@@ -53,6 +53,7 @@ jQuery(document).on('ready', async function(){
   var hasParkingId = false
   var hasMeidoId = false
   var hasPersonalParkingSpot = false
+  var personalParkingSpotId = null
   var covidQuestions = false
   var meidoTimeCheck = false
   var meidoShown = false
@@ -75,7 +76,7 @@ jQuery(document).on('ready', async function(){
   const dateList = createCustomDates(fsNative.dates, parkingActive, true)
   if (parkingActive) {
     dateList.forEach((dateElem, index) => {
-      document.getElementById("parking_" + (index+1)).onclick = function(){ handleParking(this) }
+      document.getElementById("parking_dropdown_" + (index+1)).onchange = function(){ handleParking(this) }
     })
   }
   const additionalOfficesList = createAdditionalOfficeSelectors(fsFields.additional_locations, officeList)
@@ -239,7 +240,7 @@ ${parkingActive ? "&getparking=true" : ""}`)
     return res.json()
   }).then(res => {
     if (res.meido) hasMeidoId = true
-    if (res.personal_parking_spot) hasPersonalParkingSpot = true
+    if (res.personal_parking_spot) hasPersonalParkingSpot = res.platforma_parking_spot
   })
 
 
@@ -402,6 +403,34 @@ ${parkingActive ? "&getparking=true" : ""}`)
       }
     }
 
+    function handleParkingOptions(){
+      for (let optionName in parkingSettings) {
+        const selectOptions = document.getElementsByClassName("parking-option-" + optionName)
+        for (let elem of selectOptions) {
+          elem.style.display = parkingSettings[optionName].officeList.includes(values.office) ? "block" : "none"
+          if (optionName === "parking_platforma_test") {
+            if (personalParkingSpotId) {
+              elem.innerHTML = parkingSettings[optionName].label + ", spot #" + personalParkingSpotId
+            } else {
+              elem.style.display = "none"
+            }
+          }
+        }
+      }
+      // ========================
+      if (dateList[0].value === today) {
+        document.getElementById("parking_option_parking_platforma_test_1").style.display = "none"
+      }
+      // ========================
+      if (mainOfficeChanged || accessWeekChanged) {
+        const parkingDropdowns = document.getElementsByClassName("parking-dropdown")
+        for (let dropdown of parkingDropdowns) {
+          dropdown.value = "no-parking"
+        }
+        handleParking()
+      }
+    }
+
     function displayParking(){
       const parkingElems = document.getElementsByClassName("parkingwrapper")
       const dateBoundary = new Date('2021-05-17') // use in conjunction with condition below to temporarily disable parking
@@ -519,13 +548,17 @@ ${parkingActive ? "&getparking=true" : ""}`)
         const addLocationWrapper = document.getElementById("addtable_wrapper_" + (index+1))
         const addLocations = document.getElementById("addtable_" + (index+1)).querySelectorAll('.add-office-checkbox')
         const parkingWrapper = document.getElementById("parkingwrapper_" + (index+1))
-        const parkingCheckbox = document.getElementById("parking_" + (index+1))
+        const parkingDropdown = document.getElementById("parking_dropdown_" + (index+1))
         if (dateElem.value && dateElem.value !== "") {
           dateNativeElem.value = reverseForFS(dateElem.value)
           timeNativeElem.value = "00:00"
           if (capacityActive) addLocationWrapper.style.display = "block"
           if (parkingActive) {
-            parkingWrapper.style.display = checkParkingConditions() ? "inline-flex" : "none"
+            if (checkParkingConditions()) {
+              parkingWrapper.show()
+            } else {
+              parkingWrapper.hide()
+            }
           }
         } else {
           dateNativeElem.value = null
@@ -537,8 +570,8 @@ ${parkingActive ? "&getparking=true" : ""}`)
             }
           }
           if (parkingActive) {
-            parkingWrapper.style.display = "none"
-            parkingCheckbox.checked = false
+            parkingWrapper.hide()
+            parkingDropdown.value = "no-parking"
           }
         }
         // calendar controls (+/- buttons)
@@ -580,22 +613,13 @@ ${parkingActive ? "&getparking=true" : ""}`)
       if ((selectedDates.length && JSON.stringify(selectedDates) !== selectedDatesGlobal)
       || mainOfficeChanged
       || forceCapacityUpdate) {
-        for (let label of document.getElementsByClassName("parking-label")) {
-          label.innerHTML = "Book a parking spot"
-          for (let labelText in officeParkingLabels) {
-            if (officeParkingLabels[labelText].includes(values.office)) label.innerHTML = labelText
-          }
-        }
         fetch(`https://freshservicecounter.ringteam.com/v4/getcapacity?
-office=${JSON.stringify(officeCapacity)}
-&dates=${JSON.stringify(selectedDates)}
-&mainoffice=${values.office}
-${parkingActive ? "&getparking=true" : ""}
-${parkingActive && middlewareTestRequests ? "&parkingtest=true" : ""}`)
+office=${JSON.stringify(capacityLocations)}
+&dates=${JSON.stringify(selectedDates)}`)
         .then(res => {
           return res.json()
         }).then(res => {
-          //console.log("Capacity data: ", res)
+          console.log("Capacity data: ", res)
           capacityCache = res
           var mainLocationFound = false
           for (let officeName in res) {
@@ -630,14 +654,17 @@ ${parkingActive && middlewareTestRequests ? "&parkingtest=true" : ""}`)
             } else {
               //additional capacity
               dateList.forEach((dateElem, index) => {
-                var elem = dateElem.parentNode.getElementsByClassName("capacity_" + officeName)[0]
-                if (officeName === "parking" || officeName === "parking_test") elem = document.getElementById("parkingcapacity_" + (index+1))
-               if (elem){
-                elem.style.color = "black"
-                elem.innerHTML = `approved ${res[officeName].capacity[dateElem.value]}/limit ${res[officeName].limit}`
-                if (res[officeName].capacity[dateElem.value] >= res[officeName].limit) {
-                  elem.style.color = "red"
-                }
+                if (dateElem.value) {
+                  if (parkingSettings[officeName]) {
+                    appendParkingCapacity(officeName, res[officeName], index, dateElem.value)
+                  } else {
+                    var elem = dateElem.parentNode.getElementsByClassName("capacity_" + officeName)[0]
+                    elem.style.color = "black"
+                    elem.innerHTML = `approved ${res[officeName].capacity[dateElem.value]}/limit ${res[officeName].limit}`
+                    if (res[officeName].capacity[dateElem.value] >= res[officeName].limit) {
+                      elem.style.color = "red"
+                    }
+                  }
                 }
               })
             }
@@ -652,6 +679,22 @@ ${parkingActive && middlewareTestRequests ? "&parkingtest=true" : ""}`)
       selectedDatesGlobal = JSON.stringify(selectedDates)
     }
 
+  }
+
+  function appendParkingCapacity(parking, data, index, date){
+    const option = document.getElementById(`parking_option_${parking}_${index+1}`)
+    const text = parkingSettings[parking].label || "Book a parking spot"
+    if (parkingSettings[parking].parkingPlatforma && personalParkingSpotId) {
+      console.log(data, date, personalParkingSpotId)
+      var spotLabel = personalParkingSpotId
+      if (spotLabel[0] === "0") spotLabel = spotLabel.substring(1)
+      option.innerHTML = `${text}, seat #${spotLabel}`
+      if (data.capacity[date] && data.capacity[date][personalParkingSpotId]) option.innerHTML += " (already occupied)"
+      option.disabled = data.capacity[date][personalParkingSpotId]
+    } else if (parkingSettings[parking].hasCapacity) {
+      option.innerHTML = `${text} (approved ${data.capacity[date]}/limit ${data.limit})`
+      option.disabled = data.capacity[date] >= data.limit
+    }
   }
 
   function renderDocument(){
@@ -759,6 +802,7 @@ ${parkingActive && middlewareTestRequests ? "&parkingtest=true" : ""}`)
   }
 
   function handleParking(elem){
+    /*
     const dateId = elem.id[elem.id.length - 1]
     const dateElem = document.getElementById("date_custom_" + dateId)
     if (elem.checked) {
@@ -767,8 +811,21 @@ ${parkingActive && middlewareTestRequests ? "&parkingtest=true" : ""}`)
       parkingInfo.splice(parkingInfo.indexOf(dateElem.value), 1)
     }
     fsNative.parking.innerHTML = JSON.stringify(parkingInfo)
+    checkParking()
+    */
+    const parkingLocal = {}
+    const parkingDropdowns = document.getElementsByClassName("parking-dropdown")
+    for (let dropdown of parkingDropdowns) {
+      const dateId = dropdown.id[dropdown.id.length - 1]
+      const dateElem = document.getElementById("date_custom_" + dateId)
+      if (dateElem.value && dropdown.value !== "no-parking") {
+        if (!parkingLocal[dropdown.value]) parkingLocal[dropdown.value] = []
+        parkingLocal[dropdown.value].push(dateElem.value)
+      }
+    }
     fsNative.car_plate.parentNode.hidden = !parkingLvivCondition()
-      checkParking()
+    parkingInfo = parkingLocal
+    fsNative.parking.innerHTML = JSON.stringify(parkingInfo)
   }
 
   function checkParking(){
@@ -913,21 +970,37 @@ function createCustomDates(nativeList, parkingActive, createAddLocation = false)
     const parkingWrapper = document.createElement("div")
     parkingWrapper.className += "parkingwrapper"
     parkingWrapper.id = "parkingwrapper_" + (index+1)
-    parkingWrapper.style.display = "none"
-    const parkingCheckbox = document.createElement("input")
-    parkingCheckbox.type = "checkbox"
-    parkingCheckbox.id = "parking_" + (index+1)
+    parkingWrapper.style.display = "block"
+    parkingWrapper.hide = function(){
+      parkingWrapper.style.display = "none"
+    }
+    parkingWrapper.show = function(){
+      parkingWrapper.style.display = "block"
+    }
     const parkingLabel = document.createElement("label")
-    parkingLabel.htmlFor = "parking_" + (index+1)
-    parkingLabel.innerHTML = "Book parking Troitskyi (V.Vasylkivska st. 53-55A)"
-    parkingLabel.className += "parking-label"
-    parkingLabel.style.marginLeft = "5px"
-    const parkingCapacity = document.createElement("span")
-    parkingCapacity.id = "parkingcapacity_" + (index+1)
-    parkingCapacity.style.marginLeft = "5px"
-    parkingWrapper.appendChild(parkingCheckbox)
+    parkingLabel.innerHTML = "Parking"
+    const parkingDropdown = document.createElement("select")
+    parkingDropdown.className += "parking-dropdown"
+    parkingDropdown.id = "parking_dropdown_" + (index+1)
+    parkingDropdown.style.border = "3px solid #70c9e9"
+    parkingDropdown.style.padding = "1px"
+    // ===========================
+    const noParkingOption = document.createElement("option")
+    noParkingOption.innerHTML = "I don't need parking"
+    noParkingOption.value = "no-parking"
+    parkingDropdown.appendChild(noParkingOption)
+    // ===========================
+    for (let parkingOption in parkingSettings) {
+      const option = document.createElement("option")
+      option.className = "parking-option-" + parkingOption
+      option.id = "parking_option_" + parkingOption + "_" + (index+1)
+      option.value = parkingOption
+      option.innerHTML = parkingSettings[parkingOption].label || "Book a parking spot"
+      parkingDropdown.appendChild(option)
+    }
+    // ===========================
     parkingWrapper.appendChild(parkingLabel)
-    parkingWrapper.appendChild(parkingCapacity)
+    parkingWrapper.appendChild(parkingDropdown)
     return parkingWrapper
   }
 }
@@ -1071,6 +1144,14 @@ function createCovidQuestions(){
     wrapper.appendChild(covidDropdown)
     return [wrapper,covidDropdown]
   }
+}
+
+function collectCapacityLocations(){
+  const officeLocations = officeCapacity
+  for (let parking in parkingSettings) {
+    if (parkingSettings[parking].hasCapacity) officeLocations.push(parking)
+  }
+  return officeLocations
 }
 
 function checkBrowser(){
