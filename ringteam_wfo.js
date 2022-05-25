@@ -241,7 +241,7 @@ ${parkingActive ? "&getparking=true" : ""}`)
     return res.json()
   }).then(res => {
     if (res.meido) hasMeidoId = true
-    if (res.personal_parking_spot) hasPersonalParkingSpot = res.platforma_parking_spot
+    if (res.platforma_parking_spot) hasPersonalParkingSpot = res.platforma_parking_spot
   })
 
 
