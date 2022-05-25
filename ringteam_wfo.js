@@ -40,7 +40,6 @@ jQuery(document).on('ready', async function(){
   const today = new Date()
   const todayGlobal = today.toLocaleDateString()
   const [thisWeekStart, nextWeekStart] = getWeekStarts()
-  console.log(thisWeekStart, nextWeekStart)
   var selectedDatesGlobal = []
   var capacityCache
   var capacityCheckMain = true
@@ -88,10 +87,13 @@ jQuery(document).on('ready', async function(){
     fsNative.additional_locations.forEach(elem => { elem.parentNode.hidden = true })
   }
   for (let office in officeDelay) {
-    console.log(officeSelector.querySelector(`option[value=${office}]`))
-    officeOptionsStorage[office] = officeSelector.querySelector(`option[value=${office}]`).cloneNode()
-    officeOptionsStorage[office].innerHTML = office
+    const option = officeSelector.querySelector(`option[value=${office}]`)
+    if (option) {
+      officeOptionsStorage[office] = option.cloneNode()
+      officeOptionsStorage[office].innerHTML = office
+    }
   }
+
 
       //add hotDeskCheckbox
   const hotdeskCheckboxLabel = document.createTextNode("I would like to book a hot desk.");
@@ -106,8 +108,8 @@ jQuery(document).on('ready', async function(){
   hotdeskText.innerHTML = "Please, follow the <a href='https://squad.officespacesoftware.com/visual-directory/floors/162/bookings/new' style='color:blue;cursor:pointer;' target='_blank'>link</a> for hot desks booking system. Here`re <a href='https://docs.google.com/document/d/1llpCz3RbK0cBew7kSJhZPQwD5Om8Kgj0tTq-1kgONx4/edit' style='color:blue;cursor:pointer;' target='_blank'>instructions</a> on how to make a booking.";
   hotdeskCheckboxContainer.appendChild(hotdeskText);
 
-  const customMenuOption = document.getElementById("lunch_type_Custom menu").cloneNode()
-  customMenuOption.innerHTML = "Custom menu"
+ // const customMenuOption = document.getElementById("lunch_type_Custom menu").cloneNode()
+ // customMenuOption.innerHTML = "Custom menu"
 
   const documentCheckboxLabel = document.createElement("span")
   documentCheckboxLabel.innerHTML = "Я, " + userFullName + ", ознайомився з документом та підтверджую що мій стан відповідає нормам відвідування офісу згідно з заявою.<br>*[✓] <i>означає, що дана відмітка прирівнюється до власноручного/факсимільного відтворення підпису особи.</i>"
@@ -271,7 +273,7 @@ ${parkingActive ? "&getparking=true" : ""}`)
       var weekday = new Date(date).getDay()
       if (weekday !== 6 && weekday !== 0) weekendOnly = false
     })
-    window.parkingActive =(datesInRequest.length && datesInRequest[datesInRequest.length-1] <= "2022-04-24") ? true : false
+    window.parkingActive = datesInRequest.length
     console.log(parkingActive)
     // ===============================================
 /*
@@ -311,10 +313,8 @@ ${parkingActive ? "&getparking=true" : ""}`)
           (nextWeekStart >= officeDelay[office] && values.access_week === "Next week")
           || (thisWeekStart >= officeDelay[office])
         ) {
-          console.log("add", office)
           if (!officeSelector.querySelector(`option[value=${office}]`) && officeOptionsStorage[office]) officeSelector.appendChild(officeOptionsStorage[office])
         } else {
-          console.log("remove", office)
           if (officeSelector.querySelector(`option[value=${office}]`)) officeSelector.querySelector(`option[value=${office}]`).remove()
         }
       }
@@ -375,6 +375,7 @@ ${parkingActive ? "&getparking=true" : ""}`)
         || fsNative.office.value === 'Lviv'
         || fsNative.office.value === 'BC Platforma_test'
         || fsNative.office.value === 'Lviv_test'
+        || fsNative.office.value === "Uzhhorod"
       ) {
         hotdeskCheckboxContainer.hidden = false;
         hotdeskPlatformaInfo.style.display = "block"
@@ -389,6 +390,10 @@ ${parkingActive ? "&getparking=true" : ""}`)
       if (values.office === "Lviv" || values.office === "Lviv_test") {
         hotdeskPlatformaInfo.innerHTML = "You can find more details about Lviv Office (directions, office facilities, q&a, etc) <a href=\"https://docs.google.com/document/d/1ZgjWTrqoTiQhQaPM7VXrdZWow0SnzDevyYCCDTak5FE/edit?pli=1\" style='color:blue;cursor:pointer;' target='_blank'>here</a>."
         hotdeskText.innerHTML = "Please, follow the <a href='https://squad.officespacesoftware.com/visual-directory/floors/131' style='color:blue;cursor:pointer;' target='_blank'>link</a> for hot desks booking system. Here're <a href='https://docs.google.com/document/d/1ky9iDcEO7I3Mh4xCGALTHN-eqcl7K8zKmZOlWiF4sNM/edit' style='color:blue;cursor:pointer;' target='_blank'>instructions</a> on how to make a booking."
+      }
+      if (values.office === "Uzhhorod" || values.office === "Uzhhorod_test") {
+        hotdeskPlatformaInfo.innerHTML = ""
+        hotdeskText.innerHTML = "Please, follow the <a href='https://squad.officespacesoftware.com/visual-directory/floors/207' style='color:blue;cursor:pointer;' target='_blank'>link</a> for hot desks booking system. Here're <a href='https://docs.google.com/document/d/1ky9iDcEO7I3Mh4xCGALTHN-eqcl7K8zKmZOlWiF4sNM/edit' style='color:blue;cursor:pointer;' target='_blank'>instructions</a> on how to make a booking."
       }
       if (!hotdeskCheckbox.checked) {
         hotdeskText.hidden = true;
@@ -448,20 +453,21 @@ ${parkingActive ? "&getparking=true" : ""}`)
 
       values.support_with_lunch = lunchCheckbox.checked
       fsNative.support_with_lunch.value = lunchCheckbox.checked ? "1" : "0"
-      if (values.support_with_lunch) {
+      if (values.support_with_lunch && values.office !== "Uzhhorod") {
         if (/*values.office === "Lviv" || values.office === "Lviv_test"*/false) {
           lunchTypeSelector.parentNode.hidden = true
           lunchTypeSelector.value = null
           lunchLviv.hidden = false
           meidoShown = false
-      if (meidoActive)  fsNative.meido.value = ""
+          if (meidoActive)  fsNative.meido.value = ""
         } else {
           lunchLviv.hidden = true
           lunchTypeSelector.parentNode.hidden = false
+          lunchTypeSelector.value = lunchTypeSelector.value || "Standard"
         }
       } else {
         lunchTypeSelector.parentNode.hidden = true
-        lunchTypeSelector.value = lunchTypeSelector.value || "Standard"
+        lunchTypeSelector.value = values.support_with_lunch ? lunchTypeSelector.value || "Standard" : null
         if (meidoActive === true) meidoMenu.hidden = true
         meidoShown = false
         lunchLviv.hidden = true
@@ -469,7 +475,7 @@ ${parkingActive ? "&getparking=true" : ""}`)
       }
 
       if (meidoTimeCheck && values.access_week !== "Current week" && officeMeido[values.office] && hasMeidoId) {
-        if (!document.getElementById("lunch_type_Custom menu") && customMenuOption) lunchTypeSelector.appendChild(customMenuOption)
+        if (!document.getElementById("lunch_type_Custom menu")) lunchTypeSelector.appendChild(customMenuOption)
       } else {
         if (document.getElementById("lunch_type_Custom menu")) document.getElementById("lunch_type_Custom menu").remove()
       }
