@@ -297,6 +297,7 @@ ${parkingActive ? "&getparking=true" : ""}`)
       hotdeskCheckboxContainer.hidden = true
     }
     // ===============================================
+    handleParkingOptions()
     handleLunchSection()
     handleDates()
     renderDocument()
