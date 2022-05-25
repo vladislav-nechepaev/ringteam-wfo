@@ -108,8 +108,8 @@ jQuery(document).on('ready', async function(){
   hotdeskText.innerHTML = "Please, follow the <a href='https://squad.officespacesoftware.com/visual-directory/floors/162/bookings/new' style='color:blue;cursor:pointer;' target='_blank'>link</a> for hot desks booking system. Here`re <a href='https://docs.google.com/document/d/1llpCz3RbK0cBew7kSJhZPQwD5Om8Kgj0tTq-1kgONx4/edit' style='color:blue;cursor:pointer;' target='_blank'>instructions</a> on how to make a booking.";
   hotdeskCheckboxContainer.appendChild(hotdeskText);
 
- // const customMenuOption = document.getElementById("lunch_type_Custom menu").cloneNode()
- // customMenuOption.innerHTML = "Custom menu"
+  const customMenuOption = document.getElementById("lunch_type_Custom menu").cloneNode()
+  customMenuOption.innerHTML = "Custom menu"
 
   const documentCheckboxLabel = document.createElement("span")
   documentCheckboxLabel.innerHTML = "Я, " + userFullName + ", ознайомився з документом та підтверджую що мій стан відповідає нормам відвідування офісу згідно з заявою.<br>*[✓] <i>означає, що дана відмітка прирівнюється до власноручного/факсимільного відтворення підпису особи.</i>"
