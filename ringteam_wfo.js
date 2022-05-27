@@ -116,8 +116,8 @@ jQuery(document).on('ready', async function(){
     customMenuOption.innerHTML = "Custom menu"
   }
   if (document.getElementById("lunch_type_Vegetarian")) {
-    customMenuOption = document.getElementById("lunch_type_Vegetarian").cloneNode()
-    customMenuOption.innerHTML = "Vegetarian"
+    vegetarianMenuOption = document.getElementById("lunch_type_Vegetarian").cloneNode()
+    vegetarianMenuOption.innerHTML = "Vegetarian"
   }
 
   const documentCheckboxLabel = document.createElement("span")
