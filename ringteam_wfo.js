@@ -424,6 +424,7 @@ ${parkingActive ? "&getparking=true" : ""}`)
         const selectOptions = document.getElementsByClassName("parking-option-" + optionName)
         for (let elem of selectOptions) {
           elem.style.display = parkingSettings[optionName].officeList.includes(values.office) ? "block" : "none"
+          elem.disabled = !parkingSettings[optionName].officeList.includes(values.office)
           if (optionName.startsWith("parking_platforma")) {
             //console.log("personal id:", personalParkingSpotId)
             if (personalParkingSpotId) {
