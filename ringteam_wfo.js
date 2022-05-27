@@ -239,7 +239,11 @@ ${parkingActive ? "&getparking=true" : ""}`)
 
   fetch(`https://freshservicecounter.ringteam.com/getparkingidentry?email=${userEmail}`).then(res => {
     console.log("Parking ID response: ", res.status)
-    return res.json()
+    if (res.status === 200) {
+      return res.json()
+    } else {
+      if (parkingTest) hasParkingId = true
+    }
   }).then(res => {
     console.log(res, parkingTest)
     if ((res.id && res.id.length) || parkingTest) hasParkingId = true
