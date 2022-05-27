@@ -59,6 +59,7 @@ jQuery(document).on('ready', async function(){
   var meidoTimeCheck = false
   var meidoShown = false
   var officeOptionsStorage = {}
+  var customMenuOption, vegetarianMenuOption
 
   //const durationSelector = replaceInputWithDropdown(fsFields.duration, durationList, "duration")
   //durationSelector.parentNode.hidden = true
@@ -110,8 +111,14 @@ jQuery(document).on('ready', async function(){
   hotdeskText.innerHTML = "Please, follow the <a href='https://squad.officespacesoftware.com/visual-directory/floors/162/bookings/new' style='color:blue;cursor:pointer;' target='_blank'>link</a> for hot desks booking system. Here`re <a href='https://docs.google.com/document/d/1llpCz3RbK0cBew7kSJhZPQwD5Om8Kgj0tTq-1kgONx4/edit' style='color:blue;cursor:pointer;' target='_blank'>instructions</a> on how to make a booking.";
   hotdeskCheckboxContainer.appendChild(hotdeskText);
 
-  const customMenuOption = document.getElementById("lunch_type_Custom menu").cloneNode()
-  customMenuOption.innerHTML = "Custom menu"
+  if (document.getElementById("lunch_type_Custom menu")) {
+    customMenuOption = document.getElementById("lunch_type_Custom menu").cloneNode()
+    customMenuOption.innerHTML = "Custom menu"
+  }
+  if (document.getElementById("lunch_type_Vegetarian")) {
+    customMenuOption = document.getElementById("lunch_type_Vegetarian").cloneNode()
+    customMenuOption.innerHTML = "Vegetarian"
+  }
 
   const documentCheckboxLabel = document.createElement("span")
   documentCheckboxLabel.innerHTML = "Я, " + userFullName + ", ознайомився з документом та підтверджую що мій стан відповідає нормам відвідування офісу згідно з заявою.<br>*[✓] <i>означає, що дана відмітка прирівнюється до власноручного/факсимільного відтворення підпису особи.</i>"
@@ -232,7 +239,9 @@ ${parkingActive ? "&getparking=true" : ""}`)
 
   fetch(`https://freshservicecounter.ringteam.com/getparkingidentry?email=${userEmail}`).then(res => {
     console.log("Parking ID response: ", res.status)
-    if (res.status === 200 || parkingTest) hasParkingId = true
+    return res.json()
+  }).then(res => {
+    if ((res.id && res.id.length) || parkingTest) hasParkingId = true
   })
 
   fetch(`https://freshservicecounter.ringteam.com/getmeidologin?id=${userId}${middlewareTestRequests ? "&test=true" : ""}`).then(res => {
@@ -372,6 +381,7 @@ ${parkingActive ? "&getparking=true" : ""}`)
     }
 
     function displayHotdeskSection(){
+      console.log("rendering hotdesk section")
       hotdeskPlatformaInfo.style.display = "none"
       if (fsNative.office.value === 'BC Platforma'
         || fsNative.office.value === 'Lviv'
@@ -410,11 +420,13 @@ ${parkingActive ? "&getparking=true" : ""}`)
         for (let elem of selectOptions) {
           elem.style.display = parkingSettings[optionName].officeList.includes(values.office) ? "block" : "none"
           if (optionName.startsWith("parking_platforma")) {
-            console.log("personal id:", personalParkingSpotId)
+            //console.log("personal id:", personalParkingSpotId)
             if (personalParkingSpotId) {
               elem.innerHTML = parkingSettings[optionName].label + ", spot #" + personalParkingSpotId
+              if (jQuery(elem).parent().is("span")) $(elem).unwrap()
             } else {
               elem.style.display = "none"
+              if (!jQuery(elem).parent().is("span")) $(elem).wrap("<span>")
             }
           }
         }
@@ -505,16 +517,22 @@ ${parkingActive ? "&getparking=true" : ""}`)
         if (meidoActive) fsNative.meido.value = ""
       }
 
-      if (meidoTimeCheck && values.access_week !== "Current week" && officeMeido[values.office] && hasMeidoId) {
+      if (meidoTimeCheck && values.access_week !== "Current week" && officeMeido[values.office] && hasMeidoId && meidoActive) {
         if (!document.getElementById("lunch_type_Custom menu")) lunchTypeSelector.appendChild(customMenuOption)
       } else {
         if (document.getElementById("lunch_type_Custom menu")) document.getElementById("lunch_type_Custom menu").remove()
       }
 
-     if (meidoActive) {
+      if (values.office === "BC Platforma") {
+        if (!document.getElementById("lunch_type_Vegetarian")) lunchTypeSelector.appendChild(vegetarianMenuOption)
+      } else {
+        if (document.getElementById("lunch_type_Vegetarian")) document.getElementById("lunch_type_Vegetarian").remove()
+      }
+
+      if (meidoActive) {
         meidoShown = lunchTypeSelector.value === "Custom menu"
         meidoMenu.hidden = !meidoShown
-    }
+      }
 
       values.lunch_type = lunchTypeSelector.value
       fsNative.lunch_type.value = values.lunch_type ? values.lunch_type : ""
@@ -708,7 +726,7 @@ office=${JSON.stringify(capacityLocations)}
     // =================================================
     var text = `Заява на допуск до користування Простором Товариства з обмеженою відповідальністю «ТекХостинг» (далі – ТОВ «ТекХостинг»)
 
-    Я, фізична особа-підприємець ${userFullName}, прошу допустити мене до користування офісним простором ТОВ «ТекХостинг» (далі – Простір), що знаходиться за адресою: ${documentLocations}.
+    Я, фізична особа-підприємець ${userFullName}, виявляю добровільне бажання та прошу допустити мене до користування офісним простором ТОВ «ТекХостинг» (далі – Простір), що знаходиться за адресою: ${documentLocations}. При цьому усвідомлюю ризики, які можуть скластися у зв'язку з воєнним станом введеним Указом Президента України № 64/2022 від  24 лютого 2022 року.
 
 
     Я підтверджую, що на момент надання мені доступу до користування Простором:
@@ -722,6 +740,8 @@ office=${JSON.stringify(capacityLocations)}
     • носити медичну маску/респіратор;
     • ретельно мити руки з милом протягом 20-40 сек. та регулярно обробляти їх антисептичним засобом під час перебування в Просторі;
     • дотримуватися дистанції min 1,5 (півтора) метри від інших відвідувачів Простору.
+
+    Я розумію, що при оголошенні повітряної тривоги необхідно негайно покинути приміщення Простору та зайняти місце у захисній споруді (сховищі, підвальному приміщенні), а також дотримуватися рекомендацій та правил органів державної влади та місцевого самоврядування.
 
     Дата: ${todayGlobal}`
     // =================================================
@@ -826,6 +846,7 @@ office=${JSON.stringify(capacityLocations)}
         parkingLocal[dropdown.value].push(dateElem.value)
       }
     }
+    if (personalParkingSpotId) parkingLocal.parking_platforma_id = personalParkingSpotId
     fsNative.car_plate.parentNode.hidden = !parkingLvivCondition()
     parkingInfo = parkingLocal
     fsNative.parking.innerHTML = JSON.stringify(parkingInfo)
@@ -1038,7 +1059,7 @@ function createDocumentSection(target, todayGlobal){
   documentTextContent.style.width = "600px"
   documentTextContent.style.margin = "15px"
   const nameFixed = userFullName.replace(/'/g, "&#39;")
-  documentTextContent.insertAdjacentHTML('beforeend', '<div style="text-align: center">         <b>Заява на допуск до користування Простором Товариства з обмеженою відповідальністю «ТекХостинг» (далі – ТОВ «ТекХостинг»)</b>       </div>       <br>       <div style="text-align: justify">         <p>           Я, <b>фізична особа-підприємець</b> '+nameFixed+', прошу допустити мене до користування офісним простором ТОВ «ТекХостинг» (далі – Простір), що знаходиться за адресою: <span id="doc-address"></span>.         </p>         <br>         <p>           <b>Я підтверджую</b>, що на момент надання мені доступу до користування Простором:           <ul>             <li>у мене відсутні будь-які ознаки ГРВІ, а саме: підвищена температура тіла (більше 37,2 С), кашель, утруднене дихання тощо;</li>             <li>я ознайомлений(а) з рекомендаціями МОЗ та ВООЗ щодо попередження зараження COVID-19 та їх дотримуюсь;</li>             <li>протягом останніх 7 днів я не перебував(ла) за межами України та протягом останніх 7 днів не контактував(ла) з особами, щодо яких наявна підозра/хворими на COVID-19.</li>           </ul>         </p>         <br>         <p>           <b>Я зобов’язуюсь</b> під час користування Простором дотримуватися посилених санітарно-гігієнічних норм, а також рекомендацій МОЗ та ВООЗ щодо запобігання поширенню COVID-19, а саме:           <ul>             <li>носити медичну маску/респіратор;</li>             <li>ретельно мити руки з милом протягом 20-40 сек. та регулярно обробляти їх антисептичним засобом під час перебування в Просторі;</li>             <li>дотримуватися дистанції min 1,5 (півтора) метри від інших відвідувачів Простору.</li>           </ul>         </p>       </div><br>       <div>         <b>Дата</b>: ' + todayGlobal + '       </div>')
+  documentTextContent.insertAdjacentHTML('beforeend', '<div style="text-align: center">         <b>Заява на допуск до користування Простором Товариства з обмеженою відповідальністю «ТекХостинг» (далі – ТОВ «ТекХостинг»)</b>       </div>       <br>       <div style="text-align: justify">         <p>           Я, <b>фізична особа-підприємець</b> '+nameFixed+', виявляю добровільне бажання та прошу допустити мене до користування офісним простором ТОВ «ТекХостинг» (далі – Простір), що знаходиться за адресою: <span id="doc-address"></span>. При цьому усвідомлюю ризики, які можуть скластися у зв\'язку з воєнним станом введеним Указом Президента України № 64/2022 від  24 лютого 2022 року.         </p>         <br>         <p>           <b>Я підтверджую</b>, що на момент надання мені доступу до користування Простором:           <ul>             <li>у мене відсутні будь-які ознаки ГРВІ, а саме: підвищена температура тіла (більше 37,2 С), кашель, утруднене дихання тощо;</li>             <li>я ознайомлений(а) з рекомендаціями МОЗ та ВООЗ щодо попередження зараження COVID-19 та їх дотримуюсь;</li>             <li>протягом останніх 7 днів я не перебував(ла) за межами України та протягом останніх 7 днів не контактував(ла) з особами, щодо яких наявна підозра/хворими на COVID-19.</li>           </ul>         </p>         <br>         <p>           <b>Я зобов’язуюсь</b> під час користування Простором дотримуватися посилених санітарно-гігієнічних норм, а також рекомендацій МОЗ та ВООЗ щодо запобігання поширенню COVID-19, а саме:           <ul>             <li>носити медичну маску/респіратор;</li>             <li>ретельно мити руки з милом протягом 20-40 сек. та регулярно обробляти їх антисептичним засобом під час перебування в Просторі;</li>             <li>дотримуватися дистанції min 1,5 (півтора) метри від інших відвідувачів Простору.</li>           </ul>         </p> <p><b>Я розумію</b>, що при оголошенні повітряної тривоги необхідно негайно покинути приміщення Простору та зайняти місце у захисній споруді (сховищі, підвальному приміщенні), а також дотримуватися рекомендацій та правил органів державної влади та місцевого самоврядування.</p>       </div><br>       <div>         <b>Дата</b>: ' + todayGlobal + '       </div>')
   documentTextContent.hidden = true
   documentTextWrapper.appendChild(documentTextHeader)
   documentTextWrapper.appendChild(documentTextContent)
@@ -1110,19 +1131,19 @@ function createCapacityDisplay(nextElement){
 }
 
 function createCovidQuestions(){
-  const [covidWrapper1,covidDropdown1] = createCovidDropdown("covid_dropdown1", "Have you been abroad during the last 7 days?")
-  const [covidWrapper2,covidDropdown2] = createCovidDropdown("covid_dropdown2", "Have you contacted with any suspected/COVID-19 patients for the last 7 days?")
+  //const [covidWrapper1,covidDropdown1] = createCovidDropdown("covid_dropdown1", "Have you been abroad during the last 7 days?")
+  const [covidWrapper2,covidDropdown2] = createCovidDropdown("covid_dropdown2", "Have you contacted with any suspected/COVID-19 patients for the last 5 days?")
   const [covidWrapper3,covidDropdown3] = createCovidDropdown("covid_dropdown3", "Do you have any symptoms of cold (high temperature, etc.)?")
   const covidDropdownMessage = document.createElement("div")
   covidDropdownMessage.innerHTML = "Sorry, you are not allowed to visit the office."
   covidDropdownMessage.style.color = "red"
   covidDropdownMessage.hidden = true
   const mainWrapper = document.createElement("div")
-  mainWrapper.appendChild(covidWrapper1)
+  //mainWrapper.appendChild(covidWrapper1)
   mainWrapper.appendChild(covidWrapper2)
   mainWrapper.appendChild(covidWrapper3)
   mainWrapper.appendChild(covidDropdownMessage)
-  const covidDropdownList = [covidDropdown1,covidDropdown2,covidDropdown3]
+  const covidDropdownList = [covidDropdown2,covidDropdown3]
   return [mainWrapper, covidDropdownList, covidDropdownMessage]
 
   function createCovidDropdown(id, text){
