@@ -709,7 +709,7 @@ office=${JSON.stringify(capacityLocations)}
   }
 
   function appendParkingCapacity(parking, data, index, date){
-    console.log("APPEND PARKING CAPACITY: ", data, date, personalParkingSpotId)
+    //console.log("APPEND PARKING CAPACITY: ", data, date, personalParkingSpotId)
     const option = document.getElementById(`parking_option_${parking}_${index+1}`)
     const text = parkingSettings[parking].label || "Book a parking spot"
     if (parkingSettings[parking].parkingPlatforma && personalParkingSpotId) {
@@ -718,7 +718,7 @@ office=${JSON.stringify(capacityLocations)}
       if (spotLabel[0] === "0") spotLabel = spotLabel.substring(1)
       option.innerHTML = `${text}, seat #${spotLabel}`
       if (data.capacity[date] && data.capacity[date][personalParkingSpotId]) option.innerHTML += " (already occupied)"
-      option.disabled = data.capacity[date][personalParkingSpotId]
+      option.disabled = data.capacity[date][personalParkingSpotId] && !personalParkingSpotId
     } else if (parkingSettings[parking].hasCapacity) {
       option.innerHTML = `${text} (approved ${data.capacity[date]}/limit ${data.limit})`
       option.disabled = data.capacity[date] >= data.limit
