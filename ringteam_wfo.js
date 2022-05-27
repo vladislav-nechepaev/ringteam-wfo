@@ -430,6 +430,7 @@ ${parkingActive ? "&getparking=true" : ""}`)
               elem.innerHTML = parkingSettings[optionName].label + ", spot #" + personalParkingSpotId.substring(personalParkingSpotId[0] === "0" ? 1 : 0)
               elem.disabled = false
             } else {
+              console.log("SETTING ELEM TO DISPLAY NONE", elem)
               elem.style.display = "none"
               elem.disabled = true
             }
