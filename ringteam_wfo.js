@@ -707,6 +707,7 @@ office=${JSON.stringify(capacityLocations)}
   }
 
   function appendParkingCapacity(parking, data, index, date){
+    console.log("APPEND PARKING CAPACITY: ", data, date, personalParkingSpotId)
     const option = document.getElementById(`parking_option_${parking}_${index+1}`)
     const text = parkingSettings[parking].label || "Book a parking spot"
     if (parkingSettings[parking].parkingPlatforma && personalParkingSpotId) {
