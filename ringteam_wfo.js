@@ -427,19 +427,15 @@ ${parkingActive ? "&getparking=true" : ""}`)
           if (optionName.startsWith("parking_platforma")) {
             //console.log("personal id:", personalParkingSpotId)
             if (personalParkingSpotId) {
-              elem.innerHTML = parkingSettings[optionName].label + ", spot #" + personalParkingSpotId
-              if (jQuery(elem).parent().is("span")) $(elem).unwrap()
+              elem.innerHTML = parkingSettings[optionName].label + ", spot #" + personalParkingSpotId.substring(personalParkingSpotId[0] === "0" ? 1 : 0)
             } else {
               elem.style.display = "none"
-              if (!jQuery(elem).parent().is("span")) $(elem).wrap("<span>")
             }
           }
         }
       }
       // ========================
-      if (dateList[0].value === today) {
-        document.getElementById("parking_option_parking_platforma_test_1").style.display = "none"
-      }
+      document.getElementById("parking_option_parking_platforma_test_1").style.display = dateList[0].value === today ? "none" : "block"
       // ========================
       if (mainOfficeChanged || accessWeekChanged) {
         const parkingDropdowns = document.getElementsByClassName("parking-dropdown")
