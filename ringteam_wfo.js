@@ -438,7 +438,7 @@ ${parkingActive ? "&getparking=true" : ""}`)
         }
       }
       // ========================
-      document.getElementById("parking_option_parking_platforma_test_1").style.display = dateList[0].value === today ? "none" : "block"
+      if (dateList[0].value === today) document.getElementById("parking_option_parking_platforma_test_1").style.display = "none"
       // ========================
       if (mainOfficeChanged || accessWeekChanged) {
         const parkingDropdowns = document.getElementsByClassName("parking-dropdown")
