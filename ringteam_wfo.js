@@ -241,6 +241,7 @@ ${parkingActive ? "&getparking=true" : ""}`)
     console.log("Parking ID response: ", res.status)
     return res.json()
   }).then(res => {
+    console.log(res, parkingTest)
     if ((res.id && res.id.length) || parkingTest) hasParkingId = true
   })
 
