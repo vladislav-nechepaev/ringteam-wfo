@@ -483,6 +483,7 @@ ${parkingActive ? "&getparking=true" : ""}`)
     function checkParkingConditions(){
       const dateBoundary = new Date('2021-05-17') // use in conjunction with condition below to temporarily disable parking
       const nowLocal = new Date()
+      console.log("PARKING CONDITIONS: ", officeParking.includes(values.office), hasParkingId)
       return officeParking.includes(values.office) && hasParkingId && (dateBoundary < nowLocal || values.access_week === "Next week") && parkingActive
     }
 
@@ -523,7 +524,7 @@ ${parkingActive ? "&getparking=true" : ""}`)
         if (document.getElementById("lunch_type_Custom menu")) document.getElementById("lunch_type_Custom menu").remove()
       }
 
-      if (values.office === "BC Platforma") {
+      if (values.office.startsWith("BC Platforma")) {
         if (!document.getElementById("lunch_type_Vegetarian")) lunchTypeSelector.appendChild(vegetarianMenuOption)
       } else {
         if (document.getElementById("lunch_type_Vegetarian")) document.getElementById("lunch_type_Vegetarian").remove()
