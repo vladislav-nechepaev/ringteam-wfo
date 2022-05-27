@@ -260,6 +260,9 @@ ${parkingActive ? "&getparking=true" : ""}`)
       personalParkingSpotId = res.platforma_parking_spot\
     } else {
       const platformaOptions = document.getElementsByClassName(`parking-option-parking_platforma${parkingTest ? "_test" : ""}`)
+      for (let elem in platformaOptions) {
+        elem.remove()
+      }
     }
   })
 
