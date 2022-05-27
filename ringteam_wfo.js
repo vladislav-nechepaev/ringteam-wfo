@@ -257,7 +257,7 @@ ${parkingActive ? "&getparking=true" : ""}`)
     console.log(res)
     if (res.meido) hasMeidoId = true
     if (res.platforma_parking_spot) {
-      personalParkingSpotId = res.platforma_parking_spot\
+      personalParkingSpotId = res.platforma_parking_spot
     } else {
       const platformaOptions = document.getElementsByClassName(`parking-option-parking_platforma${parkingTest ? "_test" : ""}`)
       for (let elem in platformaOptions) {
