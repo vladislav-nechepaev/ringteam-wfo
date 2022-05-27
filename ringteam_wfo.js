@@ -428,8 +428,10 @@ ${parkingActive ? "&getparking=true" : ""}`)
             //console.log("personal id:", personalParkingSpotId)
             if (personalParkingSpotId) {
               elem.innerHTML = parkingSettings[optionName].label + ", spot #" + personalParkingSpotId.substring(personalParkingSpotId[0] === "0" ? 1 : 0)
+              elem.disabled = false
             } else {
               elem.style.display = "none"
+              elem.disabled = true
             }
           }
         }
