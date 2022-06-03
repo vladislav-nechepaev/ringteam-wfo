@@ -298,13 +298,13 @@ ${parkingActive ? "&getparking=true" : ""}`)
       if (weekday !== 6 && weekday !== 0) weekendOnly = false
     })
     // ===============================================
-/*
+
   if (meidoActive && values.access_week === "Next week") {
       meidoCart.calcDateCollection()
     } else {
       fsNative.meido.innerHTML = null
     }
-*/
+s
     // ===============================================
     //const showCarPlate = fullLocationList.includes("Lviv") || fullLocationList.includes("Lviv_test")
     fsNative.car_plate.parentNode.hidden = /*!parkingLvivCondition()*/true
