@@ -304,7 +304,6 @@ ${parkingActive ? "&getparking=true" : ""}`)
     } else {
       fsNative.meido.innerHTML = null
     }
-s
     // ===============================================
     //const showCarPlate = fullLocationList.includes("Lviv") || fullLocationList.includes("Lviv_test")
     fsNative.car_plate.parentNode.hidden = /*!parkingLvivCondition()*/true
