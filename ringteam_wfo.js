@@ -167,13 +167,14 @@ jQuery(document).on('ready', async function(){
     elem.addEventListener("change", function(){ renderController() })
   })
 
-
   documentCheckbox.addEventListener("change", function(){ renderController() })
+
   var meidoMenu
   document.getElementById(fsFields.meido).parentNode.style.display = "none"
   if (meidoActive) {
     var elems = document.getElementsByClassName("main pull-left")
     if (!elems.length) elems = document.getElementsByClassName("main")
+    console.log("DATELIST: ", dateList)
     meidoMenu = await meidoInit(elems[0], dateList, fsFields.meido, 155, false, fsFields.meido_text)  // change 125 to required limit
     meidoMenu.hidden = true
     renderController()
