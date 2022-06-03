@@ -169,7 +169,6 @@ jQuery(document).on('ready', async function(){
 
 
   documentCheckbox.addEventListener("change", function(){ renderController() })
-/*
   var meidoMenu
   document.getElementById(fsFields.meido).parentNode.style.display = "none"
   if (meidoActive) {
@@ -181,7 +180,7 @@ jQuery(document).on('ready', async function(){
   } else {
     renderController()
   }
-*/
+
   jQuery("input[type=\"submit\"]").each((index, elem) => {
     elem.onclick = async function(e){
       e.preventDefault()
@@ -190,11 +189,11 @@ jQuery(document).on('ready', async function(){
         alert("Please select meals in the Meido menu")
         return false
       }
+      /*
       if (parkingLvivCondition()) {
         alert("Please fill out the car plate field")
         return false
       }
-/*
     if (!meidoShown) {
         fsNative.meido.value = ""
         fsNative.meido.innerHTML = ""
@@ -307,7 +306,7 @@ ${parkingActive ? "&getparking=true" : ""}`)
 */
     // ===============================================
     //const showCarPlate = fullLocationList.includes("Lviv") || fullLocationList.includes("Lviv_test")
-    fsNative.car_plate.parentNode.hidden = !parkingLvivCondition()
+    fsNative.car_plate.parentNode.hidden = /*!parkingLvivCondition()*/true
     // ===============================================
     handleOfficeDelay()
     checkCovidQuestions()
@@ -412,7 +411,7 @@ ${parkingActive ? "&getparking=true" : ""}`)
         hotdeskText.innerHTML = "Please, follow the <a href='https://squad.officespacesoftware.com/visual-directory/floors/162/bookings/new' style='color:blue;cursor:pointer;' target='_blank'>link</a> for hot desks booking system. Here`re <a href='https://docs.google.com/document/d/1llpCz3RbK0cBew7kSJhZPQwD5Om8Kgj0tTq-1kgONx4/edit' style='color:blue;cursor:pointer;' target='_blank'>instructions</a> on how to make a booking."
       }
       if (values.office === "Lviv" || values.office === "Lviv_test") {
-        hotdeskPlatformaInfo.innerHTML = "You can find more details about Lviv Office (directions, office facilities, q&a, etc) <a href=\"https://docs.google.com/document/d/1ZgjWTrqoTiQhQaPM7VXrdZWow0SnzDevyYCCDTak5FE/edit?pli=1\" style='color:blue;cursor:pointer;' target='_blank'>here</a>."
+        hotdeskPlatformaInfo.innerHTML = "You can find more details about Lviv Office (directions, office facilities, q&a, etc) <a href=\"https://docs.google.com/document/d/1ZgjWTrqoTiQhQaPM7VXrdZWow0SnzDevyYCCDTak5FE/edit?pli=1\" style='color:blue;cursor:pointer;' target='_blank'>here</a>.<br>You can book <b>Lviv Parking</b> following <a href=\"https://squad.officespacesoftware.com/visual-directory/floors/205/bookings/new\" style='color:blue;cursor:pointer;' target='_blank'>this link.</a>"
         hotdeskText.innerHTML = "Please, follow the <a href='https://squad.officespacesoftware.com/visual-directory/floors/131' style='color:blue;cursor:pointer;' target='_blank'>link</a> for hot desks booking system. Here're <a href='https://docs.google.com/document/d/1ky9iDcEO7I3Mh4xCGALTHN-eqcl7K8zKmZOlWiF4sNM/edit' style='color:blue;cursor:pointer;' target='_blank'>instructions</a> on how to make a booking."
       }
       if (values.office === "Uzhhorod" || values.office === "Uzhhorod_test") {
@@ -446,7 +445,10 @@ ${parkingActive ? "&getparking=true" : ""}`)
         }
       }
       // ========================
-      if (dateList[0].value === today) document.getElementById("parking_option_parking_platforma_test_1").style.display = "none"
+      if (dateList[0].value === today && document.getElementById("parking_option_parking_platforma_1")) {
+        document.getElementById("parking_option_parking_platforma_1").style.display = "none"
+        document.getElementById("parking_option_parking_platforma_1").disabled = true
+      }
       // ========================
       if (mainOfficeChanged || accessWeekChanged) {
         const parkingDropdowns = document.getElementsByClassName("parking-dropdown")
@@ -725,7 +727,7 @@ office=${JSON.stringify(capacityLocations)}
       if (spotLabel[0] === "0") spotLabel = spotLabel.substring(1)
       option.innerHTML = `${text}, seat #${spotLabel}`
       if (data.capacity[date] && data.capacity[date][personalParkingSpotId]) option.innerHTML += " (already occupied)"
-      option.disabled = data.capacity[date][personalParkingSpotId] && !personalParkingSpotId
+      option.disabled = data.capacity[date][personalParkingSpotId] || !personalParkingSpotId
     } else if (parkingSettings[parking].hasCapacity) {
       option.innerHTML = `${text} (approved ${data.capacity[date]}/limit ${data.limit})`
       option.disabled = data.capacity[date] >= data.limit
@@ -861,7 +863,7 @@ office=${JSON.stringify(capacityLocations)}
       }
     }
     if (personalParkingSpotId) parkingLocal.parking_platforma_id = personalParkingSpotId
-    fsNative.car_plate.parentNode.hidden = !parkingLvivCondition()
+    fsNative.car_plate.parentNode.hidden = /*!parkingLvivCondition()*/true
     parkingInfo = parkingLocal
     fsNative.parking.innerHTML = JSON.stringify(parkingInfo)
   }
